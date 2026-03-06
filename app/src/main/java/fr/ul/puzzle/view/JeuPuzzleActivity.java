@@ -3,22 +3,25 @@ package fr.ul.puzzle.view;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.ViewGroup;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collections;
+import java.util.List;
 
 import fr.ul.puzzle.R;
 
 public class JeuPuzzleActivity extends AppCompatActivity {
 
-    private LinearLayout layoutPieces;
+    private GridLayout gridPieces;
     private TextView tvTitreJeu;
 
     @Override
@@ -28,7 +31,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        layoutPieces = findViewById(R.id.layoutPieces);
+        gridPieces = findViewById(R.id.gridPieces);
         tvTitreJeu = findViewById(R.id.tvTitreJeu);
 
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
@@ -38,6 +41,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         } else {
             tvTitreJeu.setText("Aucun puzzle reçu");
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     private void afficherPieces(String cheminDossierPuzzle) {
@@ -57,36 +66,38 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             return;
         }
 
-        Arrays.sort(fichiersPieces, Comparator.comparing(File::getName));
+        List<File> listePieces = new ArrayList<>(Arrays.asList(fichiersPieces));
+        Collections.shuffle(listePieces);
 
-        tvTitreJeu.setText("Pièces générées : " + fichiersPieces.length);
+        tvTitreJeu.setText("Pièces mélangées : " + listePieces.size());
 
-        for (File fichierPiece : fichiersPieces) {
+        gridPieces.removeAllViews();
+
+        for (File fichierPiece : listePieces) {
             Bitmap bitmap = BitmapFactory.decodeFile(fichierPiece.getAbsolutePath());
 
             if (bitmap != null) {
-                TextView nomPiece = new TextView(this);
-                nomPiece.setText(fichierPiece.getName());
-                nomPiece.setTextSize(16f);
-                nomPiece.setPadding(0, 16, 0, 8);
-
                 ImageView imageView = new ImageView(this);
                 imageView.setImageBitmap(bitmap);
                 imageView.setAdjustViewBounds(true);
-                imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
+                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                imageView.setPadding(8, 8, 8, 8);
+
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.width = 0;
+                params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+                params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+                params.setGravity(Gravity.FILL_HORIZONTAL);
+
+                imageView.setLayoutParams(params);
+                imageView.setMinimumHeight((int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        120,
+                        getResources().getDisplayMetrics()
                 ));
 
-                layoutPieces.addView(nomPiece);
-                layoutPieces.addView(imageView);
+                gridPieces.addView(imageView);
             }
         }
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
     }
 }

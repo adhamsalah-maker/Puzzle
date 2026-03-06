@@ -102,6 +102,11 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         String nbPiecesTexte = etNbPieces.getText().toString().trim();
         String typeChoisi = spTypeDecoupage.getSelectedItem().toString();
 
+        if (!typeChoisi.equals("DROIT")) {
+            Toast.makeText(this, "Seul le découpage DROIT est implémenté pour le moment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (nomPuzzle.isEmpty()) {
             Toast.makeText(this, "Veuillez saisir un nom pour le puzzle", Toast.LENGTH_SHORT).show();
             return;

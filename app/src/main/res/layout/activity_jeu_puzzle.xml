@@ -4,7 +4,6 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/layoutPieces"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -18,6 +17,13 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
+
+        <GridLayout
+            android:id="@+id/gridPieces"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:useDefaultMargins="true" />
 
     </LinearLayout>
 
