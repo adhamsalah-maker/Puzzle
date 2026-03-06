@@ -1,0 +1,41 @@
+package fr.ul.puzzle.view;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import fr.ul.puzzle.R;
+
+public class AccueilActivity extends AppCompatActivity {
+
+    private Button btnCreerPuzzle;
+    private Button btnMesPuzzles;
+    private Button btnMesParties;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_accueil);
+
+        btnCreerPuzzle = findViewById(R.id.btnCreerPuzzle);
+        btnMesPuzzles = findViewById(R.id.btnMesPuzzles);
+        btnMesParties = findViewById(R.id.btnMesParties);
+
+        btnCreerPuzzle.setOnClickListener(v -> {
+            Intent intent = new Intent(AccueilActivity.this, CreationPuzzleActivity.class);
+            startActivity(intent);
+        });
+
+        btnMesPuzzles.setOnClickListener(v -> {
+            Intent intent = new Intent(AccueilActivity.this, ListePuzzlesActivity.class);
+            startActivity(intent);
+        });
+
+        btnMesParties.setOnClickListener(v -> {
+            Intent intent = new Intent(AccueilActivity.this, PartiesActivity.class);
+            startActivity(intent);
+        });
+    }
+}
