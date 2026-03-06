@@ -1,6 +1,7 @@
 package fr.ul.puzzle.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,10 +16,18 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.List;
 
 import fr.ul.puzzle.R;
+import fr.ul.puzzle.model.Piece;
+import fr.ul.puzzle.model.Puzzle;
+import fr.ul.puzzle.model.TypeDecoupage;
+import fr.ul.puzzle.utils.FileUtils;
 import fr.ul.puzzle.utils.GridUtils;
+import fr.ul.puzzle.utils.PuzzleGenerator;
 
 public class CreationPuzzleActivity extends AppCompatActivity {
 
@@ -79,7 +88,6 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     private void initialiserListeners() {
         btnChoisirImage.setOnClickListener(v -> ouvrirGalerie());
-
         btnGenererPuzzle.setOnClickListener(v -> genererPuzzle());
     }
 
@@ -112,33 +120,85 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         try {
             int nbPiecesSouhaite = Integer.parseInt(nbPiecesTexte);
 
-            InputStream inputStream = getContentResolver().openInputStream(imageSelectionneeUri);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputStream, null, options);
-
-            if (inputStream != null) {
-                inputStream.close();
+            Bitmap bitmapOriginal = chargerBitmapDepuisUri(imageSelectionneeUri);
+            if (bitmapOriginal == null) {
+                Toast.makeText(this, "Impossible de lire l'image", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            int largeurImage = options.outWidth;
-            int hauteurImage = options.outHeight;
+            int largeurImage = bitmapOriginal.getWidth();
+            int hauteurImage = bitmapOriginal.getHeight();
 
             int[] grille = GridUtils.calculerGrille(largeurImage, hauteurImage, nbPiecesSouhaite);
             int nbLignes = grille[0];
             int nbColonnes = grille[1];
 
+            File dossierBase = getExternalFilesDir("puzzles");
+            if (dossierBase == null) {
+                Toast.makeText(this, "Erreur dossier de stockage", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            File dossierPuzzle = FileUtils.creerDossierPuzzle(dossierBase, nomPuzzle);
+
+            File fichierImageOriginale = new File(dossierPuzzle, "image_originale.png");
+            sauvegarderBitmap(bitmapOriginal, fichierImageOriginale);
+
+            TypeDecoupage typeDecoupage = TypeDecoupage.valueOf(typeChoisi);
+
+            Puzzle puzzle = new Puzzle(
+                    1,
+                    nomPuzzle,
+                    fichierImageOriginale.getAbsolutePath(),
+                    largeurImage,
+                    hauteurImage,
+                    nbLignes,
+                    nbColonnes,
+                    typeDecoupage
+            );
+
+            List<Piece> pieces = PuzzleGenerator.genererPieces(
+                    bitmapOriginal,
+                    nbLignes,
+                    nbColonnes,
+                    dossierPuzzle
+            );
+
+            for (Piece piece : pieces) {
+                puzzle.ajouterPiece(piece);
+            }
+
             Toast.makeText(
                     this,
-                    "Puzzle \"" + nomPuzzle + "\"\nType : " + typeChoisi +
-                            "\nImage : " + largeurImage + "x" + hauteurImage +
-                            "\nGrille : " + nbLignes + " lignes x " + nbColonnes + " colonnes",
+                    "Puzzle généré avec succès : " + pieces.size() + " pièces",
                     Toast.LENGTH_LONG
             ).show();
+
+            Intent intent = new Intent(CreationPuzzleActivity.this, JeuPuzzleActivity.class);
+            intent.putExtra("dossierPuzzle", dossierPuzzle.getAbsolutePath());
+            startActivity(intent);
 
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Erreur lors de la génération du puzzle", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private Bitmap chargerBitmapDepuisUri(Uri uri) throws Exception {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+        if (inputStream != null) {
+            inputStream.close();
+        }
+
+        return bitmap;
+    }
+
+    private void sauvegarderBitmap(Bitmap bitmap, File fichier) throws Exception {
+        FileOutputStream outputStream = new FileOutputStream(fichier);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+        outputStream.flush();
+        outputStream.close();
     }
 }
