@@ -26,6 +26,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jeu_puzzle);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         layoutPieces = findViewById(R.id.layoutPieces);
         tvTitreJeu = findViewById(R.id.tvTitreJeu);
 
@@ -80,5 +82,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 layoutPieces.addView(imageView);
             }
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }
