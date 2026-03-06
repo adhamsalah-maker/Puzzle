@@ -181,6 +181,8 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
             Intent intent = new Intent(CreationPuzzleActivity.this, JeuPuzzleActivity.class);
             intent.putExtra("dossierPuzzle", dossierPuzzle.getAbsolutePath());
+            intent.putExtra("nbLignes", nbLignes);
+            intent.putExtra("nbColonnes", nbColonnes);
             startActivity(intent);
 
         } catch (Exception e) {

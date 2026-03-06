@@ -22,7 +22,22 @@
             android:id="@+id/gridPieces"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnCount="2"
+            android:useDefaultMargins="true"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:id="@+id/tvZonePuzzle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zone de reconstruction"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <GridLayout
+            android:id="@+id/gridZonePuzzle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:useDefaultMargins="true" />
 
     </LinearLayout>

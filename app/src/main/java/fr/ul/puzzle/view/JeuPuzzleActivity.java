@@ -24,6 +24,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private GridLayout gridPieces;
     private TextView tvTitreJeu;
 
+    private int nbLignes;
+    private int nbColonnes;
+    private GridLayout gridZonePuzzle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,9 +36,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         gridPieces = findViewById(R.id.gridPieces);
+        gridZonePuzzle = findViewById(R.id.gridZonePuzzle);
         tvTitreJeu = findViewById(R.id.tvTitreJeu);
 
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
+
+        nbLignes = getIntent().getIntExtra("nbLignes", 1);
+        nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
+
+        gridPieces.setColumnCount(nbColonnes);
+        gridZonePuzzle.setColumnCount(nbColonnes);
+        afficherZoneVide();
 
         if (cheminDossierPuzzle != null) {
             afficherPieces(cheminDossierPuzzle);
@@ -69,8 +81,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         List<File> listePieces = new ArrayList<>(Arrays.asList(fichiersPieces));
         Collections.shuffle(listePieces);
 
-        tvTitreJeu.setText("Pièces mélangées : " + listePieces.size());
-
+        tvTitreJeu.setText("Pièces mélangées : " + listePieces.size() + " (" + nbLignes + " x " + nbColonnes + ")");
         gridPieces.removeAllViews();
 
         for (File fichierPiece : listePieces) {
@@ -98,6 +109,25 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                 gridPieces.addView(imageView);
             }
+        }
+    }
+
+    private void afficherZoneVide() {
+        gridZonePuzzle.removeAllViews();
+
+        for (int i = 0; i < nbLignes * nbColonnes; i++) {
+            TextView caseVide = new TextView(this);
+            caseVide.setText(" ");
+            caseVide.setMinHeight(180);
+            caseVide.setBackgroundResource(android.R.drawable.editbox_background);
+
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+
+            caseVide.setLayoutParams(params);
+            gridZonePuzzle.addView(caseVide);
         }
     }
 }
