@@ -1,34 +1,52 @@
 package fr.ul.puzzle.model;
 
-import android.graphics.Bitmap;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Puzzle {
 
+    private int id;
     private String nom;
-    private Bitmap imageOriginale;
+    private String cheminImage;
+    private int largeurImage;
+    private int hauteurImage;
     private int nbLignes;
     private int nbColonnes;
     private TypeDecoupage typeDecoupage;
     private List<Piece> pieces;
 
-    public Puzzle(String nom, Bitmap imageOriginale, int nbLignes, int nbColonnes, TypeDecoupage typeDecoupage) {
+    public Puzzle(int id, String nom, String cheminImage, int largeurImage, int hauteurImage,
+                  int nbLignes, int nbColonnes, TypeDecoupage typeDecoupage) {
+
+        this.id = id;
         this.nom = nom;
-        this.imageOriginale = imageOriginale;
+        this.cheminImage = cheminImage;
+        this.largeurImage = largeurImage;
+        this.hauteurImage = hauteurImage;
         this.nbLignes = nbLignes;
         this.nbColonnes = nbColonnes;
         this.typeDecoupage = typeDecoupage;
         this.pieces = new ArrayList<>();
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getNom() {
         return nom;
     }
 
-    public Bitmap getImageOriginale() {
-        return imageOriginale;
+    public String getCheminImage() {
+        return cheminImage;
+    }
+
+    public int getLargeurImage() {
+        return largeurImage;
+    }
+
+    public int getHauteurImage() {
+        return hauteurImage;
     }
 
     public int getNbLignes() {
@@ -47,12 +65,24 @@ public class Puzzle {
         return pieces;
     }
 
+    public void ajouterPiece(Piece piece) {
+        pieces.add(piece);
+    }
+
     public void setNom(String nom) {
         this.nom = nom;
     }
 
-    public void setImageOriginale(Bitmap imageOriginale) {
-        this.imageOriginale = imageOriginale;
+    public void setCheminImage(String cheminImage) {
+        this.cheminImage = cheminImage;
+    }
+
+    public void setLargeurImage(int largeurImage) {
+        this.largeurImage = largeurImage;
+    }
+
+    public void setHauteurImage(int hauteurImage) {
+        this.hauteurImage = hauteurImage;
     }
 
     public void setNbLignes(int nbLignes) {
@@ -65,13 +95,5 @@ public class Puzzle {
 
     public void setTypeDecoupage(TypeDecoupage typeDecoupage) {
         this.typeDecoupage = typeDecoupage;
-    }
-
-    public void setPieces(List<Piece> pieces) {
-        this.pieces = pieces;
-    }
-
-    public void ajouterPiece(Piece piece) {
-        this.pieces.add(piece);
     }
 }

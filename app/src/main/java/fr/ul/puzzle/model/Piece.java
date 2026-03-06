@@ -1,23 +1,27 @@
 package fr.ul.puzzle.model;
 
-import android.graphics.Bitmap;
-
 public class Piece {
 
     private int id;
     private int ligneCorrecte;
     private int colonneCorrecte;
-    private int rotation;
+    private int rotationCourante;
+    private int rotationCible;
     private boolean placee;
-    private Bitmap image;
+    private float xCourant;
+    private float yCourant;
+    private String cheminImage;
 
-    public Piece(int id, int ligneCorrecte, int colonneCorrecte, Bitmap image) {
+    public Piece(int id, int ligneCorrecte, int colonneCorrecte, int rotationCible, String cheminImage) {
         this.id = id;
         this.ligneCorrecte = ligneCorrecte;
         this.colonneCorrecte = colonneCorrecte;
-        this.image = image;
-        this.rotation = 0;
+        this.rotationCible = rotationCible;
+        this.cheminImage = cheminImage;
+        this.rotationCourante = 0;
         this.placee = false;
+        this.xCourant = 0;
+        this.yCourant = 0;
     }
 
     public int getId() {
@@ -32,23 +36,51 @@ public class Piece {
         return colonneCorrecte;
     }
 
-    public int getRotation() {
-        return rotation;
+    public int getRotationCourante() {
+        return rotationCourante;
     }
 
-    public void setRotation(int rotation) {
-        this.rotation = rotation;
+    public int getRotationCible() {
+        return rotationCible;
     }
 
     public boolean estPlacee() {
         return placee;
     }
 
+    public float getXCourant() {
+        return xCourant;
+    }
+
+    public float getYCourant() {
+        return yCourant;
+    }
+
+    public String getCheminImage() {
+        return cheminImage;
+    }
+
+    public void setRotationCourante(int rotationCourante) {
+        this.rotationCourante = rotationCourante;
+    }
+
+    public void setRotationCible(int rotationCible) {
+        this.rotationCible = rotationCible;
+    }
+
     public void setPlacee(boolean placee) {
         this.placee = placee;
     }
 
-    public Bitmap getImage() {
-        return image;
+    public void setXCourant(float xCourant) {
+        this.xCourant = xCourant;
+    }
+
+    public void setYCourant(float yCourant) {
+        this.yCourant = yCourant;
+    }
+
+    public void setCheminImage(String cheminImage) {
+        this.cheminImage = cheminImage;
     }
 }
