@@ -10,7 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.util.DisplayMetrics;
+import android.view.View;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private int nbColonnes;
     private GridLayout gridZonePuzzle;
     private ImageView pieceSelectionnee = null;
+    private int largeurImage;
+    private int hauteurImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
+        largeurImage = getIntent().getIntExtra("largeurImage", 1);
+        hauteurImage = getIntent().getIntExtra("hauteurImage", 1);
 
         gridPieces.setColumnCount(nbColonnes);
         gridZonePuzzle.setColumnCount(nbColonnes);
@@ -94,7 +99,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
                 imageView.setOnClickListener(v -> {
+                    if (pieceSelectionnee != null) {
+                        pieceSelectionnee.setAlpha(1.0f);
+                    }
+
                     pieceSelectionnee = imageView;
+                    pieceSelectionnee.setAlpha(0.5f);
                 });
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
@@ -118,30 +128,62 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void afficherZoneVide() {
         gridZonePuzzle.removeAllViews();
 
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+
+        int largeurCase = largeurDisponible / nbColonnes;
+        int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+
         for (int i = 0; i < nbLignes * nbColonnes; i++) {
             ImageView caseVide = new ImageView(this);
             caseVide.setImageDrawable(null);
-            caseVide.setAdjustViewBounds(true);
-            caseVide.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            caseVide.setMinimumHeight(180);
-            caseVide.setBackgroundColor(0xFFFFFFFF);
+            caseVide.setScaleType(ImageView.ScaleType.FIT_XY);
+            caseVide.setBackgroundColor(0xFFF5F5F5);
 
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
-            params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.height = hauteurCase;
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(1, 1, 1, 1);
+            params.setMargins(0, 0, 0, 0);
 
             caseVide.setLayoutParams(params);
 
             caseVide.setOnClickListener(v -> {
+                ImageView pieceDansLaCase = (ImageView) caseVide.getTag();
+
                 if (pieceSelectionnee != null) {
+                    if (pieceDansLaCase != null) {
+                        pieceDansLaCase.setVisibility(View.VISIBLE);
+                        pieceDansLaCase.setAlpha(1.0f);
+                    }
+
                     caseVide.setImageDrawable(pieceSelectionnee.getDrawable());
-                    pieceSelectionnee.setVisibility(ImageView.INVISIBLE);
+                    caseVide.setTag(pieceSelectionnee);
+
+                    pieceSelectionnee.setVisibility(View.GONE);
+                    pieceSelectionnee.setAlpha(1.0f);
                     pieceSelectionnee = null;
+
+                } else {
+                    if (pieceDansLaCase != null) {
+                        pieceDansLaCase.setVisibility(View.VISIBLE);
+                        pieceDansLaCase.setAlpha(1.0f);
+
+                        caseVide.setImageDrawable(null);
+                        caseVide.setTag(null);
+                    }
                 }
             });
 
             gridZonePuzzle.addView(caseVide);
         }
-    }}
+    }
+    private int dpVersPx(int dp) {
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                getResources().getDisplayMetrics()
+        );
+    }
+
+}

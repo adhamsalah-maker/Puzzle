@@ -183,6 +183,8 @@ public class CreationPuzzleActivity extends AppCompatActivity {
             intent.putExtra("dossierPuzzle", dossierPuzzle.getAbsolutePath());
             intent.putExtra("nbLignes", nbLignes);
             intent.putExtra("nbColonnes", nbColonnes);
+            intent.putExtra("largeurImage", largeurImage);
+            intent.putExtra("hauteurImage", hauteurImage);
             startActivity(intent);
 
         } catch (Exception e) {
