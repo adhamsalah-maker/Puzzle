@@ -23,10 +23,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     private GridLayout gridPieces;
     private TextView tvTitreJeu;
-
     private int nbLignes;
     private int nbColonnes;
     private GridLayout gridZonePuzzle;
+    private ImageView pieceSelectionnee = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,14 +92,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 imageView.setImageBitmap(bitmap);
                 imageView.setAdjustViewBounds(true);
                 imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                imageView.setPadding(8, 8, 8, 8);
+
+                imageView.setOnClickListener(v -> {
+                    pieceSelectionnee = imageView;
+                });
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = 0;
                 params.height = GridLayout.LayoutParams.WRAP_CONTENT;
                 params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
                 params.setGravity(Gravity.FILL_HORIZONTAL);
-
+                imageView.setPadding(4, 4, 4, 4);
                 imageView.setLayoutParams(params);
                 imageView.setMinimumHeight((int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_DIP,
@@ -116,18 +119,29 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridZonePuzzle.removeAllViews();
 
         for (int i = 0; i < nbLignes * nbColonnes; i++) {
-            TextView caseVide = new TextView(this);
-            caseVide.setText(" ");
-            caseVide.setMinHeight(180);
-            caseVide.setBackgroundResource(android.R.drawable.editbox_background);
+            ImageView caseVide = new ImageView(this);
+            caseVide.setImageDrawable(null);
+            caseVide.setAdjustViewBounds(true);
+            caseVide.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            caseVide.setMinimumHeight(180);
+            caseVide.setBackgroundColor(0xFFFFFFFF);
 
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
             params.height = GridLayout.LayoutParams.WRAP_CONTENT;
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(1, 1, 1, 1);
 
             caseVide.setLayoutParams(params);
+
+            caseVide.setOnClickListener(v -> {
+                if (pieceSelectionnee != null) {
+                    caseVide.setImageDrawable(pieceSelectionnee.getDrawable());
+                    pieceSelectionnee.setVisibility(ImageView.INVISIBLE);
+                    pieceSelectionnee = null;
+                }
+            });
+
             gridZonePuzzle.addView(caseVide);
         }
-    }
-}
+    }}
