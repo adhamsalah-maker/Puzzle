@@ -138,13 +138,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             ImageView caseVide = new ImageView(this);
             caseVide.setImageDrawable(null);
             caseVide.setScaleType(ImageView.ScaleType.FIT_XY);
-            caseVide.setBackgroundColor(0xFFF5F5F5);
+
+            caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
 
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = 0;
             params.height = hauteurCase;
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(0, 0, 0, 0);
+            params.setMargins(1, 1, 1, 1);
 
             caseVide.setLayoutParams(params);
 
@@ -171,6 +172,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                         caseVide.setImageDrawable(null);
                         caseVide.setTag(null);
+                        caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
                     }
                 }
             });
@@ -178,7 +180,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             gridZonePuzzle.addView(caseVide);
         }
     }
-    private int dpVersPx(int dp) {
+
+        private int dpVersPx(int dp) {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 dp,
