@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import fr.ul.puzzle.R;
+import fr.ul.puzzle.model.PositionCase;
+
 
 public class JeuPuzzleActivity extends AppCompatActivity {
 
@@ -98,6 +100,16 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 imageView.setAdjustViewBounds(true);
                 imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
+                String nomFichier = fichierPiece.getName();
+                String numero = nomFichier.replace("piece_", "").replace(".png", "");
+                int indexPiece = Integer.parseInt(numero) - 1;
+
+                int ligneCorrecte = indexPiece / nbColonnes;
+                int colonneCorrecte = indexPiece % nbColonnes;
+
+                PositionCase positionCorrecte = new PositionCase(ligneCorrecte, colonneCorrecte);
+                imageView.setTag(positionCorrecte);
+
                 imageView.setOnClickListener(v -> {
                     if (pieceSelectionnee != null) {
                         pieceSelectionnee.setAlpha(1.0f);
@@ -112,6 +124,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 params.height = GridLayout.LayoutParams.WRAP_CONTENT;
                 params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
                 params.setGravity(Gravity.FILL_HORIZONTAL);
+
                 imageView.setPadding(4, 4, 4, 4);
                 imageView.setLayoutParams(params);
                 imageView.setMinimumHeight((int) TypedValue.applyDimension(
@@ -124,7 +137,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
         }
     }
-
     private void afficherZoneVide() {
         gridZonePuzzle.removeAllViews();
 
@@ -134,53 +146,71 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         int largeurCase = largeurDisponible / nbColonnes;
         int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
 
-        for (int i = 0; i < nbLignes * nbColonnes; i++) {
-            ImageView caseVide = new ImageView(this);
-            caseVide.setImageDrawable(null);
-            caseVide.setScaleType(ImageView.ScaleType.FIT_XY);
+        for (int ligne = 0; ligne < nbLignes; ligne++) {
+            for (int colonne = 0; colonne < nbColonnes; colonne++) {
 
-            caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
+                ImageView caseVide = new ImageView(this);
+                caseVide.setImageDrawable(null);
+                caseVide.setScaleType(ImageView.ScaleType.FIT_XY);
+                caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
+                caseVide.setPadding(dpVersPx(2), dpVersPx(2), dpVersPx(2), dpVersPx(2));
 
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = hauteurCase;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(1, 1, 1, 1);
+                PositionCase positionCase = new PositionCase(ligne, colonne);
+                caseVide.setTag(R.id.tag_position_case, positionCase);
+                caseVide.setTag(R.id.tag_piece_placee, null);
 
-            caseVide.setLayoutParams(params);
+                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                params.width = 0;
+                params.height = hauteurCase;
+                params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+                params.setMargins(1, 1, 1, 1);
 
-            caseVide.setOnClickListener(v -> {
-                ImageView pieceDansLaCase = (ImageView) caseVide.getTag();
+                caseVide.setLayoutParams(params);
 
-                if (pieceSelectionnee != null) {
-                    if (pieceDansLaCase != null) {
-                        pieceDansLaCase.setVisibility(View.VISIBLE);
-                        pieceDansLaCase.setAlpha(1.0f);
+                caseVide.setOnClickListener(v -> {
+                    ImageView pieceDansLaCase = (ImageView) caseVide.getTag(R.id.tag_piece_placee);
+
+                    if (pieceSelectionnee != null) {
+                        if (pieceDansLaCase != null) {
+                            pieceDansLaCase.setVisibility(View.VISIBLE);
+                            pieceDansLaCase.setAlpha(1.0f);
+                        }
+
+                        caseVide.setImageDrawable(pieceSelectionnee.getDrawable());
+                        caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
+
+                        PositionCase positionCorrecte = (PositionCase) pieceSelectionnee.getTag();
+                        PositionCase positionCouranteCase = (PositionCase) caseVide.getTag(R.id.tag_position_case);
+
+                        if (positionCorrecte != null && positionCouranteCase != null
+                                && positionCorrecte.getLigne() == positionCouranteCase.getLigne()
+                                && positionCorrecte.getColonne() == positionCouranteCase.getColonne()) {
+
+                            caseVide.setBackgroundResource(R.drawable.case_puzzle_correct);
+                        } else {
+
+                            caseVide.setBackgroundResource(R.drawable.case_puzzle_faux);                        }
+
+                        pieceSelectionnee.setVisibility(View.GONE);
+                        pieceSelectionnee.setAlpha(1.0f);
+                        pieceSelectionnee = null;
+
+                    } else {
+                        if (pieceDansLaCase != null) {
+                            pieceDansLaCase.setVisibility(View.VISIBLE);
+                            pieceDansLaCase.setAlpha(1.0f);
+
+                            caseVide.setImageDrawable(null);
+                            caseVide.setTag(R.id.tag_piece_placee, null);
+                            caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
+                                                    }
                     }
+                });
 
-                    caseVide.setImageDrawable(pieceSelectionnee.getDrawable());
-                    caseVide.setTag(pieceSelectionnee);
-
-                    pieceSelectionnee.setVisibility(View.GONE);
-                    pieceSelectionnee.setAlpha(1.0f);
-                    pieceSelectionnee = null;
-
-                } else {
-                    if (pieceDansLaCase != null) {
-                        pieceDansLaCase.setVisibility(View.VISIBLE);
-                        pieceDansLaCase.setAlpha(1.0f);
-
-                        caseVide.setImageDrawable(null);
-                        caseVide.setTag(null);
-                        caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
-                    }
-                }
-            });
-
-            gridZonePuzzle.addView(caseVide);
+                gridZonePuzzle.addView(caseVide);
+            }
         }
     }
-
         private int dpVersPx(int dp) {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
