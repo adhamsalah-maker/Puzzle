@@ -9,6 +9,7 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -194,6 +195,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         pieceSelectionnee.setVisibility(View.GONE);
                         pieceSelectionnee.setAlpha(1.0f);
                         pieceSelectionnee = null;
+                        verifierVictoire();
 
                     } else {
                         if (pieceDansLaCase != null) {
@@ -218,5 +220,57 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 getResources().getDisplayMetrics()
         );
     }
+
+    private void verifierVictoire() {
+
+        boolean puzzleTermine = true;
+
+        for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+
+            ImageView casePuzzle = (ImageView) gridZonePuzzle.getChildAt(i);
+
+            ImageView piece = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
+
+            if (piece == null) {
+                puzzleTermine = false;
+                break;
+            }
+
+            PositionCase positionCorrecte = (PositionCase) piece.getTag();
+            PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+
+            if (positionCorrecte == null ||
+                    positionCorrecte.getLigne() != positionCase.getLigne() ||
+                    positionCorrecte.getColonne() != positionCase.getColonne()) {
+
+                puzzleTermine = false;
+                break;
+            }
+        }
+
+        if (puzzleTermine) {
+            afficherVictoire();
+        }
+    }
+
+
+
+    private void afficherVictoire() {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Puzzle terminé")
+                .setMessage("Bravo ! Vous avez réussi le puzzle.")
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+
+
+
+
+
+
+
+
 
 }
