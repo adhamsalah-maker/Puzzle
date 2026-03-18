@@ -53,12 +53,25 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
         <Button
             android:id="@+id/btnChoisirImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Choisir une image"
             android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnPrendrePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="PRENDRE UNE PHOTO" />
+    </LinearLayout>
 
         <ImageView
             android:id="@+id/ivApercuImage"

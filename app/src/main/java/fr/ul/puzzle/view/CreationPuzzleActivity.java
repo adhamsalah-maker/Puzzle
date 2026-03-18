@@ -39,6 +39,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
     private ImageView ivApercuImage;
 
     private Uri imageSelectionneeUri;
+    private Button btnPrendrePhoto;
 
     private final ActivityResultLauncher<Intent> galerieLauncher =
             registerForActivityResult(
@@ -49,6 +50,39 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
                             if (imageSelectionneeUri != null) {
                                 ivApercuImage.setImageURI(imageSelectionneeUri);
+                            }
+                        }
+                    }
+            );
+    private final ActivityResultLauncher<Intent> cameraLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            Bundle extras = result.getData().getExtras();
+
+                            if (extras != null) {
+                                Bitmap bitmapPhoto = (Bitmap) extras.get("data");
+
+                                if (bitmapPhoto != null) {
+                                    ivApercuImage.setImageBitmap(bitmapPhoto);
+
+                                    try {
+                                        File dossierTemp = getExternalFilesDir("temp");
+                                        if (dossierTemp != null && !dossierTemp.exists()) {
+                                            dossierTemp.mkdirs();
+                                        }
+
+                                        File fichierPhoto = new File(dossierTemp, "photo_camera_temp.png");
+                                        sauvegarderBitmap(bitmapPhoto, fichierPhoto);
+
+                                        imageSelectionneeUri = Uri.fromFile(fichierPhoto);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(this, "Erreur lors de la sauvegarde de la photo", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
                             }
                         }
                     }
@@ -69,6 +103,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         etNbPieces = findViewById(R.id.etNbPieces);
         spTypeDecoupage = findViewById(R.id.spTypeDecoupage);
         btnChoisirImage = findViewById(R.id.btnChoisirImage);
+        btnPrendrePhoto = findViewById(R.id.btnPrendrePhoto);
         btnGenererPuzzle = findViewById(R.id.btnGenererPuzzle);
         ivApercuImage = findViewById(R.id.ivApercuImage);
     }
@@ -88,6 +123,9 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     private void initialiserListeners() {
         btnChoisirImage.setOnClickListener(v -> ouvrirGalerie());
+
+        btnPrendrePhoto.setOnClickListener(v -> ouvrirCamera());
+
         btnGenererPuzzle.setOnClickListener(v -> genererPuzzle());
     }
 
@@ -209,5 +247,12 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
         outputStream.flush();
         outputStream.close();
+    }
+
+
+
+    private void ouvrirCamera() {
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(intent);
     }
 }
