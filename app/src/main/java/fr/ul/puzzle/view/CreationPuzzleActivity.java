@@ -50,8 +50,9 @@ public class CreationPuzzleActivity extends AppCompatActivity {
                             imageSelectionneeUri = result.getData().getData();
 
                             if (imageSelectionneeUri != null) {
-                                ivApercuImage.setImageURI(imageSelectionneeUri);
-                            }
+                                ivApercuImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                ivApercuImage.setAdjustViewBounds(true);
+                                ivApercuImage.setImageURI(imageSelectionneeUri);                            }
                         }
                     }
             );
@@ -63,8 +64,9 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
                             if (fichierPhotoCamera != null && fichierPhotoCamera.exists()) {
                                 imageSelectionneeUri = Uri.fromFile(fichierPhotoCamera);
-                                ivApercuImage.setImageURI(imageSelectionneeUri);
-                            }
+                                ivApercuImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                ivApercuImage.setAdjustViewBounds(true);
+                                ivApercuImage.setImageURI(imageSelectionneeUri);                            }
                         }
                     }
             );

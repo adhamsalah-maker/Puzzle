@@ -76,10 +76,13 @@
         <ImageView
             android:id="@+id/ivApercuImage"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Aperçu image"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="220dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:background="#DDDDDD"
+            android:contentDescription="Aperçu de l'image" />
 
         <Button
             android:id="@+id/btnGenererPuzzle"

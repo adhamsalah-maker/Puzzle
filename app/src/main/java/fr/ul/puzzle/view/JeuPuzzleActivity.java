@@ -140,19 +140,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     pieceSelectionnee.setAlpha(0.5f);
                 });
 
+                DisplayMetrics metrics = getResources().getDisplayMetrics();
+                int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+                int largeurCase = largeurDisponible / nbColonnes;
+                int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = 0;
-                params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+                params.height = hauteurCase;
                 params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
                 params.setGravity(Gravity.FILL_HORIZONTAL);
+                params.setMargins(4, 4, 4, 4);
 
                 imageView.setPadding(4, 4, 4, 4);
                 imageView.setLayoutParams(params);
-                imageView.setMinimumHeight((int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        120,
-                        getResources().getDisplayMetrics()
-                ));
+                imageView.setAdjustViewBounds(false);
+                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
                 gridPieces.addView(imageView);
             }
