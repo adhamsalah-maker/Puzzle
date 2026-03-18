@@ -2,5 +2,6 @@
 <resources>
     <item name="tag_position_case" type="id"/>
     <item name="tag_piece_placee" type="id"/>
-    <item name="tag_rotation_piece" type="id" />
+    <item name="tag_rotation_piece" type="id"/>
+    <item name="tag_rotation_cible" type="id"/>
 </resources>

@@ -226,9 +226,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         PositionCase positionCorrecte = (PositionCase) pieceSelectionnee.getTag();
                         PositionCase positionCouranteCase = (PositionCase) caseVide.getTag(R.id.tag_position_case);
 
-                        if (positionCorrecte != null && positionCouranteCase != null
-                                && positionCorrecte.getLigne() == positionCouranteCase.getLigne()
-                                && positionCorrecte.getColonne() == positionCouranteCase.getColonne()) {
+                        if (estPieceBienPlacee(pieceSelectionnee, caseVide)) {
                             fondCase.setImageResource(R.drawable.case_puzzle_correct);
                         } else {
                             fondCase.setImageResource(R.drawable.case_puzzle_faux);
@@ -264,21 +262,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
 
             FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
-
             ImageView piece = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
 
-            if (piece == null) {
-                puzzleTermine = false;
-                break;
-            }
-
-            PositionCase positionCorrecte = (PositionCase) piece.getTag();
-            PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
-
-            if (positionCorrecte == null ||
-                    positionCorrecte.getLigne() != positionCase.getLigne() ||
-                    positionCorrecte.getColonne() != positionCase.getColonne()) {
-
+            if (piece == null || !estPieceBienPlacee(piece, casePuzzle)) {
                 puzzleTermine = false;
                 break;
             }
@@ -300,7 +286,30 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 .show();
     }
 
+    private boolean estPieceBienPlacee(ImageView piece, FrameLayout casePuzzle) {
+        if (piece == null || casePuzzle == null) {
+            return false;
+        }
 
+        PositionCase positionCorrecte = (PositionCase) piece.getTag();
+        PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+
+        Integer rotationCourante = (Integer) piece.getTag(R.id.tag_rotation_piece);
+        Integer rotationCible = (Integer) piece.getTag(R.id.tag_rotation_cible);
+
+        if (positionCorrecte == null || positionCase == null
+                || rotationCourante == null || rotationCible == null) {
+            return false;
+        }
+
+        boolean bonnePosition =
+                positionCorrecte.getLigne() == positionCase.getLigne()
+                        && positionCorrecte.getColonne() == positionCase.getColonne();
+
+        boolean bonneRotation = rotationCourante.equals(rotationCible);
+
+        return bonnePosition && bonneRotation;
+    }
 
     private void configurerDragPourPiece(ImageView pieceView) {
         pieceView.setOnLongClickListener(v -> {
@@ -376,9 +385,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     PositionCase positionCorrecte = (PositionCase) pieceDragged.getTag();
                     PositionCase positionCase = (PositionCase) targetCase.getTag(R.id.tag_position_case);
 
-                    if (positionCorrecte != null && positionCase != null
-                            && positionCorrecte.getLigne() == positionCase.getLigne()
-                            && positionCorrecte.getColonne() == positionCase.getColonne()) {
+                    if (estPieceBienPlacee(piecePlacee, targetCase)) {
                         fondCase.setImageResource(R.drawable.case_puzzle_correct);
                     } else {
                         fondCase.setImageResource(R.drawable.case_puzzle_faux);

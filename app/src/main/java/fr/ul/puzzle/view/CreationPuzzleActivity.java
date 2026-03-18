@@ -40,6 +40,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     private Uri imageSelectionneeUri;
     private Button btnPrendrePhoto;
+    private File fichierPhotoCamera;
 
     private final ActivityResultLauncher<Intent> galerieLauncher =
             registerForActivityResult(
@@ -58,31 +59,11 @@ public class CreationPuzzleActivity extends AppCompatActivity {
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
-                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                            Bundle extras = result.getData().getExtras();
+                        if (result.getResultCode() == RESULT_OK) {
 
-                            if (extras != null) {
-                                Bitmap bitmapPhoto = (Bitmap) extras.get("data");
-
-                                if (bitmapPhoto != null) {
-                                    ivApercuImage.setImageBitmap(bitmapPhoto);
-
-                                    try {
-                                        File dossierTemp = getExternalFilesDir("temp");
-                                        if (dossierTemp != null && !dossierTemp.exists()) {
-                                            dossierTemp.mkdirs();
-                                        }
-
-                                        File fichierPhoto = new File(dossierTemp, "photo_camera_temp.png");
-                                        sauvegarderBitmap(bitmapPhoto, fichierPhoto);
-
-                                        imageSelectionneeUri = Uri.fromFile(fichierPhoto);
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        Toast.makeText(this, "Erreur lors de la sauvegarde de la photo", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
+                            if (fichierPhotoCamera != null && fichierPhotoCamera.exists()) {
+                                imageSelectionneeUri = Uri.fromFile(fichierPhotoCamera);
+                                ivApercuImage.setImageURI(imageSelectionneeUri);
                             }
                         }
                     }
@@ -252,7 +233,28 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
 
     private void ouvrirCamera() {
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(intent);
+        try {
+            File dossierTemp = getExternalFilesDir("temp");
+            if (dossierTemp != null && !dossierTemp.exists()) {
+                dossierTemp.mkdirs();
+            }
+
+            fichierPhotoCamera = new File(dossierTemp, "photo_hd.png");
+
+            Uri photoUri = androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".provider",
+                    fichierPhotoCamera
+            );
+
+            Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoUri);
+
+            cameraLauncher.launch(intent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Erreur ouverture caméra", Toast.LENGTH_SHORT).show();
+        }
     }
 }
