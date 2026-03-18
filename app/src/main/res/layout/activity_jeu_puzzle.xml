@@ -18,6 +18,28 @@
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
 
+        <LinearLayout
+            android:id="@+id/layoutRotation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btnRotationGauche"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⟲ Gauche" />
+
+            <Button
+                android:id="@+id/btnRotationDroite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Droite ⟳" />
+        </LinearLayout>
+
         <GridLayout
             android:id="@+id/gridPieces"
             android:layout_width="match_parent"

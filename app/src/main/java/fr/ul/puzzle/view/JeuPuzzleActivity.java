@@ -37,6 +37,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private ImageView pieceSelectionnee = null;
     private int largeurImage;
     private int hauteurImage;
+    private android.widget.Button btnRotationGauche;
+    private android.widget.Button btnRotationDroite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridZonePuzzle = findViewById(R.id.gridZonePuzzle);
         tvTitreJeu = findViewById(R.id.tvTitreJeu);
 
+        btnRotationGauche = findViewById(R.id.btnRotationGauche);
+        btnRotationDroite = findViewById(R.id.btnRotationDroite);
+
+        btnRotationGauche.setOnClickListener(v -> tournerPieceSelectionnee(-90));
+        btnRotationDroite.setOnClickListener(v -> tournerPieceSelectionnee(90));
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
@@ -114,6 +121,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                 PositionCase positionCorrecte = new PositionCase(ligneCorrecte, colonneCorrecte);
                 imageView.setTag(positionCorrecte);
+
+                int[] rotationsPossibles = {0, 90, 180, 270};
+                int rotationInitiale = rotationsPossibles[(int) (Math.random() * 4)];
+
+                imageView.setTag(R.id.tag_rotation_piece, rotationInitiale);
+                imageView.setRotation(rotationInitiale);
+
+
                 configurerDragPourPiece(imageView);
 
                 imageView.setOnClickListener(v -> {
@@ -410,6 +425,24 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         caseVide.setTag(R.id.tag_piece_placee, null);
         fondCase.setImageResource(R.drawable.case_puzzle_vide);
+    }
+
+
+    private void tournerPieceSelectionnee(int angleAAjouter) {
+        if (pieceSelectionnee == null) {
+            return;
+        }
+
+        Integer rotationActuelle = (Integer) pieceSelectionnee.getTag(R.id.tag_rotation_piece);
+
+        if (rotationActuelle == null) {
+            rotationActuelle = 0;
+        }
+
+        int nouvelleRotation = (rotationActuelle + angleAAjouter + 360) % 360;
+
+        pieceSelectionnee.setRotation(nouvelleRotation);
+        pieceSelectionnee.setTag(R.id.tag_rotation_piece, nouvelleRotation);
     }
 
 
