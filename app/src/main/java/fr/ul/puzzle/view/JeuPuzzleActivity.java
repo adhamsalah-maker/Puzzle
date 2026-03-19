@@ -43,6 +43,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private android.widget.Button btnRotationDroite;
     private ProgressBar progressBarPuzzle;
     private TextView tvProgressionPourcentage;
+    private android.widget.Button btnAide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         btnRotationGauche.setOnClickListener(v -> tournerPieceSelectionnee(-90));
         btnRotationDroite.setOnClickListener(v -> tournerPieceSelectionnee(90));
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
+
+        btnAide = findViewById(R.id.btnAide);
+        btnAide.setOnClickListener(v -> utiliserAide());
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
@@ -519,5 +523,68 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         pieceSelectionnee.setTag(R.id.tag_rotation_piece, nouvelleRotation);
     }
 
+    private void utiliserAide() {
+
+        for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+
+            FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+            ImageView pieceDejaPlacee = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
+
+            // On cherche une case vide
+            if (pieceDejaPlacee == null) {
+
+                PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+
+                // Chercher la bonne pièce dans la grille du haut
+                for (int j = 0; j < gridPieces.getChildCount(); j++) {
+
+                    FrameLayout conteneur = (FrameLayout) gridPieces.getChildAt(j);
+
+                    if (conteneur.getChildCount() > 0) {
+
+                        ImageView piece = (ImageView) conteneur.getChildAt(0);
+                        PositionCase positionCorrecte = (PositionCase) piece.getTag();
+
+                        if (positionCorrecte != null &&
+                                positionCorrecte.getLigne() == positionCase.getLigne() &&
+                                positionCorrecte.getColonne() == positionCase.getColonne()) {
+
+                            // Enlever du haut
+                            conteneur.removeView(piece);
+                            gridPieces.removeView(conteneur);
+
+                            // Mettre bonne rotation
+                            piece.setRotation(0);
+                            piece.setTag(R.id.tag_rotation_piece, 0);
+
+                            // Ajouter dans la case
+                            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                    FrameLayout.LayoutParams.MATCH_PARENT,
+                                    FrameLayout.LayoutParams.MATCH_PARENT
+                            );
+
+                            piece.setLayoutParams(params);
+                            piece.setScaleType(ImageView.ScaleType.FIT_XY);
+
+                            casePuzzle.addView(piece);
+                            casePuzzle.setTag(R.id.tag_piece_placee, piece);
+
+                            ImageView fondCase = (ImageView) casePuzzle.getChildAt(0);
+                            fondCase.setImageResource(R.drawable.case_puzzle_correct);
+
+                            piece.setOnClickListener(v ->
+                                    remettrePieceDansGrille(piece, casePuzzle, fondCase)
+                            );
+
+                            mettreAJourProgression();
+                            verifierVictoire();
+
+                            return; // 💥 IMPORTANT → une seule pièce à la fois
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }
