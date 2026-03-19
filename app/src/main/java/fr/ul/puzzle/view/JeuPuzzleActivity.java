@@ -44,6 +44,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private ProgressBar progressBarPuzzle;
     private TextView tvProgressionPourcentage;
     private android.widget.Button btnAide;
+    private TextView tvNbAides;
+    private int nbAidesRestantes = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +66,24 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         btnRotationGauche.setOnClickListener(v -> tournerPieceSelectionnee(-90));
         btnRotationDroite.setOnClickListener(v -> tournerPieceSelectionnee(90));
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
-
+        tvNbAides = findViewById(R.id.tvNbAides);
+        tvNbAides.setText(String.valueOf(nbAidesRestantes));
         btnAide = findViewById(R.id.btnAide);
-        btnAide.setOnClickListener(v -> utiliserAide());
+        btnAide.setOnClickListener(v -> {
+            if (nbAidesRestantes > 0) {
+                utiliserAide();
+                nbAidesRestantes--;
+
+                tvNbAides.setText(String.valueOf(nbAidesRestantes));
+
+                if (nbAidesRestantes == 0) {
+                    btnAide.setEnabled(false);
+                    btnAide.setAlpha(0.5f);
+                }
+            }
+        });
+
+
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
@@ -569,6 +586,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                             casePuzzle.addView(piece);
                             casePuzzle.setTag(R.id.tag_piece_placee, piece);
 
+                            animerPieceAidee(piece);
+
                             ImageView fondCase = (ImageView) casePuzzle.getChildAt(0);
                             fondCase.setImageResource(R.drawable.case_puzzle_correct);
 
@@ -587,4 +606,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+
+    private void animerPieceAidee(ImageView piece) {
+        piece.setAlpha(0f);
+        piece.setScaleX(0.7f);
+        piece.setScaleY(0.7f);
+
+        piece.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(300)
+                .start();
+    }
 }
