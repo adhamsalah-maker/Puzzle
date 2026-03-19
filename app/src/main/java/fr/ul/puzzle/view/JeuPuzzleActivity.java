@@ -70,22 +70,27 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         hauteurImage = getIntent().getIntExtra("hauteurImage", 1);
 
         gridPieces.setColumnCount(nbColonnes);
+        gridPieces.setRowCount(nbLignes);
+
         gridZonePuzzle.setColumnCount(nbColonnes);
+        gridZonePuzzle.setRowCount(nbLignes);
 
         gridPieces.setClipChildren(true);
         gridPieces.setClipToPadding(true);
 
         gridZonePuzzle.setClipChildren(true);
         gridZonePuzzle.setClipToPadding(true);
-
         progressBarPuzzle.setMax(100);
         progressBarPuzzle.setProgress(0);
         tvProgressionPourcentage.setText("0%");
-        afficherZoneVide();
 
         if (cheminDossierPuzzle != null) {
-            afficherPieces(cheminDossierPuzzle);
+            gridZonePuzzle.post(() -> {
+                afficherZoneVide();
+                afficherPieces(cheminDossierPuzzle);
+            });
         } else {
+            afficherZoneVide();
             tvTitreJeu.setText("Aucun puzzle reçu");
         }
     }
@@ -159,24 +164,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     pieceSelectionnee.setAlpha(0.5f);
                 });
 
-                DisplayMetrics metrics = getResources().getDisplayMetrics();
-                int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+                int largeurDisponible = gridPieces.getWidth();
+                int hauteurDisponible = gridPieces.getHeight();
+
                 int largeurCase = largeurDisponible / nbColonnes;
-                int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+                int hauteurCase = hauteurDisponible / nbLignes;
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = 0;
+                params.width = largeurCase;
                 params.height = hauteurCase;
-                params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-                params.setGravity(Gravity.FILL_HORIZONTAL);
-                params.setMargins(4, 4, 4, 4);
+                params.setMargins(2, 2, 2, 2);
 
                 FrameLayout conteneurPiece = new FrameLayout(this);
                 conteneurPiece.setLayoutParams(params);
                 conteneurPiece.setClipChildren(true);
                 conteneurPiece.setClipToPadding(true);
-                conteneurPiece.setPadding(4, 4, 4, 4);
-
+                conteneurPiece.setPadding(2, 2, 2, 2);
                 FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
@@ -194,20 +197,19 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void afficherZoneVide() {
         gridZonePuzzle.removeAllViews();
 
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+        int largeurDisponible = gridZonePuzzle.getWidth();
+        int hauteurDisponible = gridZonePuzzle.getHeight();
 
         int largeurCase = largeurDisponible / nbColonnes;
-        int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+        int hauteurCase = hauteurDisponible / nbLignes;
 
         for (int ligne = 0; ligne < nbLignes; ligne++) {
             for (int colonne = 0; colonne < nbColonnes; colonne++) {
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = 0;
+                params.width = largeurCase;
                 params.height = hauteurCase;
-                params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-                params.setMargins(1, 1, 1, 1);
+                params.setMargins(2, 2, 2, 2);
 
                 FrameLayout caseVide = new FrameLayout(this);
                 caseVide.setLayoutParams(params);
@@ -464,33 +466,42 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void remettrePieceDansGrille(ImageView piece, FrameLayout caseVide, ImageView fondCase) {
         caseVide.removeView(piece);
 
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+        int largeurDisponible = gridPieces.getWidth();
+        int hauteurDisponible = gridPieces.getHeight();
+
         int largeurCase = largeurDisponible / nbColonnes;
-        int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+        int hauteurCase = hauteurDisponible / nbLignes;
 
         GridLayout.LayoutParams paramsPiece = new GridLayout.LayoutParams();
-        paramsPiece.width = 0;
+        paramsPiece.width = largeurCase;
         paramsPiece.height = hauteurCase;
-        paramsPiece.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-        paramsPiece.setGravity(Gravity.FILL_HORIZONTAL);
-        paramsPiece.setMargins(4, 4, 4, 4);
+        paramsPiece.setMargins(2, 2, 2, 2);
 
-        piece.setLayoutParams(paramsPiece);
+        FrameLayout conteneurPiece = new FrameLayout(this);
+        conteneurPiece.setLayoutParams(paramsPiece);
+        conteneurPiece.setClipChildren(true);
+        conteneurPiece.setClipToPadding(true);
+        conteneurPiece.setPadding(2, 2, 2, 2);
+
+        FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+
+        piece.setLayoutParams(imageParams);
         piece.setAdjustViewBounds(false);
         piece.setScaleType(ImageView.ScaleType.FIT_XY);
-        piece.setPadding(4, 4, 4, 4);
         piece.setVisibility(View.VISIBLE);
         piece.setAlpha(1.0f);
 
-        gridPieces.addView(piece);
+        conteneurPiece.addView(piece);
+        gridPieces.addView(conteneurPiece);
 
         caseVide.setTag(R.id.tag_piece_placee, null);
         fondCase.setImageResource(R.drawable.case_puzzle_vide);
 
         mettreAJourProgression();
     }
-
     private void tournerPieceSelectionnee(int angleAAjouter) {
         if (pieceSelectionnee == null) {
             return;
