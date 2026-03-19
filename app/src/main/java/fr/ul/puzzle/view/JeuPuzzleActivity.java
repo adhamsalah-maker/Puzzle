@@ -65,6 +65,13 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         gridPieces.setColumnCount(nbColonnes);
         gridZonePuzzle.setColumnCount(nbColonnes);
+
+        gridPieces.setClipChildren(true);
+        gridPieces.setClipToPadding(true);
+
+        gridZonePuzzle.setClipChildren(true);
+        gridZonePuzzle.setClipToPadding(true);
+
         afficherZoneVide();
 
         if (cheminDossierPuzzle != null) {
@@ -122,6 +129,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 PositionCase positionCorrecte = new PositionCase(ligneCorrecte, colonneCorrecte);
                 imageView.setTag(positionCorrecte);
 
+// rotation correcte attendue
+                imageView.setTag(R.id.tag_rotation_cible, 0);
+
                 int[] rotationsPossibles = {0, 90, 180, 270};
                 int rotationInitiale = rotationsPossibles[(int) (Math.random() * 4)];
 
@@ -152,12 +162,23 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 params.setGravity(Gravity.FILL_HORIZONTAL);
                 params.setMargins(4, 4, 4, 4);
 
-                imageView.setPadding(4, 4, 4, 4);
-                imageView.setLayoutParams(params);
+                FrameLayout conteneurPiece = new FrameLayout(this);
+                conteneurPiece.setLayoutParams(params);
+                conteneurPiece.setClipChildren(true);
+                conteneurPiece.setClipToPadding(true);
+                conteneurPiece.setPadding(4, 4, 4, 4);
+
+                FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT
+                );
+
+                imageView.setLayoutParams(imageParams);
                 imageView.setAdjustViewBounds(false);
                 imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
-                gridPieces.addView(imageView);
+                conteneurPiece.addView(imageView);
+                gridPieces.addView(conteneurPiece);
             }
         }
     }
@@ -226,8 +247,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         ImageView piecePlacee = pieceSelectionnee;
                         piecePlacee.setOnClickListener(v2 -> remettrePieceDansGrille(piecePlacee, caseVide, fondCase));
 
-                        PositionCase positionCorrecte = (PositionCase) pieceSelectionnee.getTag();
-                        PositionCase positionCouranteCase = (PositionCase) caseVide.getTag(R.id.tag_position_case);
 
                         if (estPieceBienPlacee(pieceSelectionnee, caseVide)) {
                             fondCase.setImageResource(R.drawable.case_puzzle_correct);
@@ -413,20 +432,21 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void remettrePieceDansGrille(ImageView piece, FrameLayout caseVide, ImageView fondCase) {
         caseVide.removeView(piece);
 
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int largeurDisponible = metrics.widthPixels - dpVersPx(32);
+        int largeurCase = largeurDisponible / nbColonnes;
+        int hauteurCase = (largeurCase * hauteurImage * nbColonnes) / (largeurImage * nbLignes);
+
         GridLayout.LayoutParams paramsPiece = new GridLayout.LayoutParams();
         paramsPiece.width = 0;
-        paramsPiece.height = GridLayout.LayoutParams.WRAP_CONTENT;
+        paramsPiece.height = hauteurCase;
         paramsPiece.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
         paramsPiece.setGravity(Gravity.FILL_HORIZONTAL);
+        paramsPiece.setMargins(4, 4, 4, 4);
 
         piece.setLayoutParams(paramsPiece);
-        piece.setAdjustViewBounds(true);
-        piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        piece.setMinimumHeight((int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                120,
-                getResources().getDisplayMetrics()
-        ));
+        piece.setAdjustViewBounds(false);
+        piece.setScaleType(ImageView.ScaleType.FIT_XY);
         piece.setPadding(4, 4, 4, 4);
         piece.setVisibility(View.VISIBLE);
         piece.setAlpha(1.0f);
@@ -436,7 +456,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         caseVide.setTag(R.id.tag_piece_placee, null);
         fondCase.setImageResource(R.drawable.case_puzzle_vide);
     }
-
 
     private void tournerPieceSelectionnee(int angleAAjouter) {
         if (pieceSelectionnee == null) {
