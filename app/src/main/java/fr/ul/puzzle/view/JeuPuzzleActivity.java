@@ -27,6 +27,8 @@ import android.view.DragEvent;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import android.widget.ProgressBar;
+
 public class JeuPuzzleActivity extends AppCompatActivity {
 
     private GridLayout gridPieces;
@@ -39,6 +41,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private int hauteurImage;
     private android.widget.Button btnRotationGauche;
     private android.widget.Button btnRotationDroite;
+    private ProgressBar progressBarPuzzle;
+    private TextView tvProgressionPourcentage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridZonePuzzle = findViewById(R.id.gridZonePuzzle);
         tvTitreJeu = findViewById(R.id.tvTitreJeu);
 
+        progressBarPuzzle = findViewById(R.id.progressBarPuzzle);
+        tvProgressionPourcentage = findViewById(R.id.tvProgressionPourcentage);
         btnRotationGauche = findViewById(R.id.btnRotationGauche);
         btnRotationDroite = findViewById(R.id.btnRotationDroite);
 
@@ -72,6 +78,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridZonePuzzle.setClipChildren(true);
         gridZonePuzzle.setClipToPadding(true);
 
+        progressBarPuzzle.setMax(100);
+        progressBarPuzzle.setProgress(0);
+        tvProgressionPourcentage.setText("0%");
         afficherZoneVide();
 
         if (cheminDossierPuzzle != null) {
@@ -256,11 +265,13 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                         pieceSelectionnee.setAlpha(1.0f);
                         pieceSelectionnee = null;
+                        mettreAJourProgression();
                         verifierVictoire();
 
                     } else {
                         if (pieceDansLaCase != null) {
                             remettrePieceDansGrille(pieceDansLaCase, caseVide, fondCase);
+                            mettreAJourProgression();
                         }
                     }
                 });
@@ -297,7 +308,27 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void mettreAJourProgression() {
+        int nbPiecesBienPlacees = 0;
+        int nbTotalCases = gridZonePuzzle.getChildCount();
 
+        for (int i = 0; i < nbTotalCases; i++) {
+            FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+            ImageView piece = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
+
+            if (piece != null && estPieceBienPlacee(piece, casePuzzle)) {
+                nbPiecesBienPlacees++;
+            }
+        }
+
+        int progression = 0;
+        if (nbTotalCases > 0) {
+            progression = (nbPiecesBienPlacees * 100) / nbTotalCases;
+        }
+
+        progressBarPuzzle.setProgress(progression);
+        tvProgressionPourcentage.setText(progression + "%");
+    }
 
     private void afficherVictoire() {
 
@@ -413,6 +444,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         fondCase.setImageResource(R.drawable.case_puzzle_faux);
                     }
 
+                    mettreAJourProgression();
                     verifierVictoire();
                     return true;
 
@@ -455,6 +487,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         caseVide.setTag(R.id.tag_piece_placee, null);
         fondCase.setImageResource(R.drawable.case_puzzle_vide);
+
+        mettreAJourProgression();
     }
 
     private void tournerPieceSelectionnee(int angleAAjouter) {
