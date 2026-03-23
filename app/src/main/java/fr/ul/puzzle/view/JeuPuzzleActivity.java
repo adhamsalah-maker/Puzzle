@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 public class JeuPuzzleActivity extends AppCompatActivity {
 
@@ -63,8 +65,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         btnRotationGauche = findViewById(R.id.btnRotationGauche);
         btnRotationDroite = findViewById(R.id.btnRotationDroite);
 
+        Button btnApercu = findViewById(R.id.btnApercu);
         btnRotationGauche.setOnClickListener(v -> tournerPieceSelectionnee(-90));
         btnRotationDroite.setOnClickListener(v -> tournerPieceSelectionnee(90));
+        btnApercu.setOnClickListener(v -> {
+            Toast.makeText(this, "Aperçu cliqué", Toast.LENGTH_SHORT).show();
+        });
         String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         tvNbAides = findViewById(R.id.tvNbAides);
         tvNbAides.setText(String.valueOf(nbAidesRestantes));
@@ -234,7 +240,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                 FrameLayout caseVide = new FrameLayout(this);
                 caseVide.setLayoutParams(params);
-                caseVide.setPadding(dpVersPx(2), dpVersPx(2), dpVersPx(2), dpVersPx(2));
+                caseVide.setPadding(dpVersPx(4), dpVersPx(4), dpVersPx(4), dpVersPx(4));
+                caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
 
                 PositionCase positionCase = new PositionCase(ligne, colonne);
                 caseVide.setTag(R.id.tag_position_case, positionCase);
@@ -246,7 +253,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         FrameLayout.LayoutParams.MATCH_PARENT
                 ));
                 fondCase.setScaleType(ImageView.ScaleType.FIT_XY);
-                fondCase.setImageResource(R.drawable.case_puzzle_vide);
+                fondCase.setBackgroundColor(0x00FFFFFF);
 
                 caseVide.addView(fondCase);
 
@@ -256,15 +263,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     ImageView pieceDansLaCase = (ImageView) caseVide.getTag(R.id.tag_piece_placee);
 
                     if (pieceSelectionnee != null) {
+
                         if (pieceDansLaCase != null) {
-                            pieceDansLaCase.setVisibility(View.VISIBLE);
-                            pieceDansLaCase.setAlpha(1.0f);
-                            caseVide.removeView(pieceDansLaCase);
+                            remettrePieceDansGrille(pieceDansLaCase, caseVide, fondCase);
                         }
 
-                        if (pieceSelectionnee.getParent() instanceof ViewGroup) {
-                            ((ViewGroup) pieceSelectionnee.getParent()).removeView(pieceSelectionnee);
-                        }
+                        retirerPieceDeSonParent(pieceSelectionnee);
 
                         FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
                                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -279,22 +283,21 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         ImageView piecePlacee = pieceSelectionnee;
                         piecePlacee.setOnClickListener(v2 -> remettrePieceDansGrille(piecePlacee, caseVide, fondCase));
 
-
                         if (estPieceBienPlacee(pieceSelectionnee, caseVide)) {
-                            fondCase.setImageResource(R.drawable.case_puzzle_correct);
+                            caseVide.setBackgroundResource(R.drawable.case_puzzle_correct);
                         } else {
-                            fondCase.setImageResource(R.drawable.case_puzzle_faux);
+                            caseVide.setBackgroundResource(R.drawable.case_puzzle_faux);
                         }
 
                         pieceSelectionnee.setAlpha(1.0f);
                         pieceSelectionnee = null;
+
                         mettreAJourProgression();
                         verifierVictoire();
 
                     } else {
                         if (pieceDansLaCase != null) {
                             remettrePieceDansGrille(pieceDansLaCase, caseVide, fondCase);
-                            mettreAJourProgression();
                         }
                     }
                 });
@@ -428,9 +431,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     ImageView fondCase = (ImageView) targetCase.getChildAt(0);
 
                     // enlever la pièce de son ancien parent
-                    if (pieceDragged.getParent() instanceof ViewGroup) {
-                        ((ViewGroup) pieceDragged.getParent()).removeView(pieceDragged);
-                    }
+                    retirerPieceDeSonParent((ImageView) pieceDragged);
 
                     // si une pièce existe déjà dans la case, on l’enlève et on la remet en haut
                     if (targetCase.getChildCount() > 1) {
@@ -462,9 +463,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     PositionCase positionCase = (PositionCase) targetCase.getTag(R.id.tag_position_case);
 
                     if (estPieceBienPlacee(piecePlacee, targetCase)) {
-                        fondCase.setImageResource(R.drawable.case_puzzle_correct);
+                        targetCase.setBackgroundResource(R.drawable.case_puzzle_correct);
                     } else {
-                        fondCase.setImageResource(R.drawable.case_puzzle_faux);
+                        targetCase.setBackgroundResource(R.drawable.case_puzzle_faux);
                     }
 
                     mettreAJourProgression();
@@ -510,19 +511,53 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         );
 
         piece.setLayoutParams(imageParams);
+        piece.setImageDrawable(piece.getDrawable());
         piece.setAdjustViewBounds(false);
         piece.setScaleType(ImageView.ScaleType.FIT_XY);
         piece.setVisibility(View.VISIBLE);
         piece.setAlpha(1.0f);
 
+        // remettre le comportement normal de sélection
+        piece.setOnClickListener(v -> {
+            if (pieceSelectionnee != null) {
+                pieceSelectionnee.setAlpha(1.0f);
+            }
+
+            pieceSelectionnee = piece;
+            pieceSelectionnee.setAlpha(0.5f);
+        });
+
+        // remettre aussi le drag
+        configurerDragPourPiece(piece);
+
         conteneurPiece.addView(piece);
         gridPieces.addView(conteneurPiece);
 
         caseVide.setTag(R.id.tag_piece_placee, null);
-        fondCase.setImageResource(R.drawable.case_puzzle_vide);
+        caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
 
         mettreAJourProgression();
     }
+
+    private void retirerPieceDeSonParent(ImageView piece) {
+        if (piece.getParent() instanceof FrameLayout) {
+            FrameLayout parentFrame = (FrameLayout) piece.getParent();
+
+            if (parentFrame.getParent() == gridPieces) {
+                // La pièce vient de la grille du haut
+                parentFrame.removeView(piece);
+                gridPieces.removeView(parentFrame);
+            } else {
+                // La pièce vient d'une case de reconstruction
+                parentFrame.removeView(piece);
+            }
+        } else if (piece.getParent() instanceof ViewGroup) {
+            ((ViewGroup) piece.getParent()).removeView(piece);
+        }
+    }
+
+
+
     private void tournerPieceSelectionnee(int angleAAjouter) {
         if (pieceSelectionnee == null) {
             return;
@@ -566,9 +601,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                                 positionCorrecte.getLigne() == positionCase.getLigne() &&
                                 positionCorrecte.getColonne() == positionCase.getColonne()) {
 
-                            // Enlever du haut
-                            conteneur.removeView(piece);
-                            gridPieces.removeView(conteneur);
+                            retirerPieceDeSonParent(piece);
 
                             // Mettre bonne rotation
                             piece.setRotation(0);
@@ -589,7 +622,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                             animerPieceAidee(piece);
 
                             ImageView fondCase = (ImageView) casePuzzle.getChildAt(0);
-                            fondCase.setImageResource(R.drawable.case_puzzle_correct);
+                            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_correct);
 
                             piece.setOnClickListener(v ->
                                     remettrePieceDansGrille(piece, casePuzzle, fondCase)
