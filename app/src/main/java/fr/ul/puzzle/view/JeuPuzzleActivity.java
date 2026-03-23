@@ -30,6 +30,12 @@ import android.widget.FrameLayout;
 
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.content.SharedPreferences;
+
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class JeuPuzzleActivity extends AppCompatActivity {
 
@@ -49,6 +55,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private TextView tvNbAides;
     private int nbAidesRestantes = 3;
     private String cheminDossierPuzzle;
+    private List<ImageView> listePiecesCreees = new ArrayList<>();
+    private android.widget.Button btnSauvegarder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +88,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                 tvNbAides.setText(String.valueOf(nbAidesRestantes));
 
+                sauvegarderPartie();
                 if (nbAidesRestantes == 0) {
                     btnAide.setEnabled(false);
                     btnAide.setAlpha(0.5f);
@@ -87,6 +96,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
         });
 
+        btnSauvegarder = findViewById(R.id.btnSauvegarder);
+        btnSauvegarder.setOnClickListener(v -> {
+            sauvegarderPartie();
+            sauvegarderPartieDansFichier();
+        });
 
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
@@ -113,6 +127,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             gridZonePuzzle.post(() -> {
                 afficherZoneVide();
                 afficherPieces(cheminDossierPuzzle);
+                chargerPartieSauvegardee();
             });
         } else {
             afficherZoneVide();
@@ -148,6 +163,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         tvTitreJeu.setText("Pièces mélangées : " + listePieces.size() + " (" + nbLignes + " x " + nbColonnes + ")");
         gridPieces.removeAllViews();
+        listePiecesCreees.clear();
 
         for (File fichierPiece : listePieces) {
             Bitmap bitmap = BitmapFactory.decodeFile(fichierPiece.getAbsolutePath());
@@ -168,6 +184,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 PositionCase positionCorrecte = new PositionCase(ligneCorrecte, colonneCorrecte);
                 imageView.setTag(positionCorrecte);
 
+                imageView.setTag(R.id.tag_piece_index, indexPiece);
 // rotation correcte attendue
                 imageView.setTag(R.id.tag_rotation_cible, 0);
 
@@ -216,6 +233,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                 conteneurPiece.addView(imageView);
                 gridPieces.addView(conteneurPiece);
+                listePiecesCreees.add(imageView);
             }
         }
     }
@@ -289,8 +307,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                         pieceSelectionnee.setAlpha(1.0f);
                         pieceSelectionnee = null;
-
                         mettreAJourProgression();
+                        sauvegarderPartie();
                         verifierVictoire();
 
                     } else {
@@ -355,13 +373,157 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void afficherVictoire() {
-
+        supprimerSauvegardePartie();
         new AlertDialog.Builder(this)
                 .setTitle("Puzzle terminé")
                 .setMessage("Bravo ! Vous avez réussi le puzzle.")
                 .setPositiveButton("OK", null)
                 .show();
     }
+
+    private void sauvegarderPartie() {
+        SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        StringBuilder sauvegarde = new StringBuilder();
+
+        for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+            FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+            ImageView piece = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
+
+            if (piece != null) {
+                Integer indexPiece = (Integer) piece.getTag(R.id.tag_piece_index);
+                PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+                Integer rotationPiece = (Integer) piece.getTag(R.id.tag_rotation_piece);
+
+                if (indexPiece != null && positionCase != null && rotationPiece != null) {
+                    sauvegarde.append(indexPiece)
+                            .append(",")
+                            .append(positionCase.getLigne())
+                            .append(",")
+                            .append(positionCase.getColonne())
+                            .append(",")
+                            .append(rotationPiece)
+                            .append(";");
+                }
+            }
+        }
+
+        editor.putString("etat_cases", sauvegarde.toString());
+        editor.putInt("nbAidesRestantes", nbAidesRestantes);
+        editor.apply();
+    }
+
+    private void chargerPartieSauvegardee() {
+        SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
+
+        String etatCases = prefs.getString("etat_cases", "");
+        nbAidesRestantes = prefs.getInt("nbAidesRestantes", 3);
+
+        tvNbAides.setText(String.valueOf(nbAidesRestantes));
+
+        if (nbAidesRestantes == 0) {
+            btnAide.setEnabled(false);
+            btnAide.setAlpha(0.5f);
+        } else {
+            btnAide.setEnabled(true);
+            btnAide.setAlpha(1.0f);
+        }
+
+        if (etatCases == null || etatCases.isEmpty()) {
+            mettreAJourProgression();
+            return;
+        }
+
+        String[] lignesSauvegarde = etatCases.split(";");
+
+        for (String ligneSauvegardeUnique : lignesSauvegarde) {
+            if (ligneSauvegardeUnique.trim().isEmpty()) {
+                continue;
+            }
+
+            String[] morceaux = ligneSauvegardeUnique.split(",");
+
+            if (morceaux.length != 4) {
+                continue;
+            }
+
+            int indexPiece = Integer.parseInt(morceaux[0]);
+            int ligneCase = Integer.parseInt(morceaux[1]);
+            int colonneCase = Integer.parseInt(morceaux[2]);
+            int rotationPiece = Integer.parseInt(morceaux[3]);
+
+            ImageView pieceATrouver = null;
+
+            for (ImageView piece : listePiecesCreees) {
+                Integer index = (Integer) piece.getTag(R.id.tag_piece_index);
+                if (index != null && index == indexPiece) {
+                    pieceATrouver = piece;
+                    break;
+                }
+            }
+
+            if (pieceATrouver == null) {
+                continue;
+            }
+
+            FrameLayout caseTrouvee = null;
+
+            for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+                FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+                PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+
+                if (positionCase != null
+                        && positionCase.getLigne() == ligneCase
+                        && positionCase.getColonne() == colonneCase) {
+                    caseTrouvee = casePuzzle;
+                    break;
+                }
+            }
+
+            if (caseTrouvee == null) {
+                continue;
+            }
+
+            retirerPieceDeSonParent(pieceATrouver);
+
+            FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+            );
+            pieceATrouver.setLayoutParams(pieceParams);
+            pieceATrouver.setScaleType(ImageView.ScaleType.FIT_XY);
+            pieceATrouver.setRotation(rotationPiece);
+            pieceATrouver.setTag(R.id.tag_rotation_piece, rotationPiece);
+
+            caseTrouvee.addView(pieceATrouver);
+            caseTrouvee.setTag(R.id.tag_piece_placee, pieceATrouver);
+
+            ImageView fondCase = (ImageView) caseTrouvee.getChildAt(0);
+
+            final ImageView pieceFinale = pieceATrouver;
+            final FrameLayout caseFinale = caseTrouvee;
+            final ImageView fondFinal = fondCase;
+
+            pieceFinale.setOnClickListener(v ->
+                    remettrePieceDansGrille(pieceFinale, caseFinale, fondFinal)
+            );
+
+            if (estPieceBienPlacee(pieceATrouver, caseTrouvee)) {
+                caseTrouvee.setBackgroundResource(R.drawable.case_puzzle_correct);
+            } else {
+                caseTrouvee.setBackgroundResource(R.drawable.case_puzzle_faux);
+            }
+        }
+
+        mettreAJourProgression();
+    }
+
+    private void supprimerSauvegardePartie() {
+        SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
+        prefs.edit().clear().apply();
+    }
+
 
     private boolean estPieceBienPlacee(ImageView piece, FrameLayout casePuzzle) {
         if (piece == null || casePuzzle == null) {
@@ -467,6 +629,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     }
 
                     mettreAJourProgression();
+                    sauvegarderPartie();
                     verifierVictoire();
                     return true;
 
@@ -535,6 +698,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
 
         mettreAJourProgression();
+        sauvegarderPartie();
     }
 
     private void retirerPieceDeSonParent(ImageView piece) {
@@ -683,6 +847,52 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 .show();
     }
 
+
+    private void sauvegarderPartieDansFichier() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                Toast.makeText(this, "Puzzle introuvable", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
+            String etatCases = prefs.getString("etat_cases", "");
+
+            File dossierParties = getExternalFilesDir("parties");
+            if (dossierParties == null) {
+                Toast.makeText(this, "Erreur dossier parties", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!dossierParties.exists()) {
+                dossierParties.mkdirs();
+            }
+
+            String dateTexte = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            File fichierPartie = new File(dossierParties, "partie_" + dateTexte + ".txt");
+
+            StringBuilder contenu = new StringBuilder();
+            contenu.append("cheminDossierPuzzle=").append(cheminDossierPuzzle).append("\n");
+            contenu.append("nbLignes=").append(nbLignes).append("\n");
+            contenu.append("nbColonnes=").append(nbColonnes).append("\n");
+            contenu.append("largeurImage=").append(largeurImage).append("\n");
+            contenu.append("hauteurImage=").append(hauteurImage).append("\n");
+            contenu.append("nbAidesRestantes=").append(nbAidesRestantes).append("\n");
+            contenu.append("etat_cases=").append(etatCases).append("\n");
+            contenu.append("date=").append(dateTexte).append("\n");
+
+            FileOutputStream fos = new FileOutputStream(fichierPartie);
+            fos.write(contenu.toString().getBytes());
+            fos.flush();
+            fos.close();
+
+            Toast.makeText(this, "Partie sauvegardée", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Erreur sauvegarde partie", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
 }

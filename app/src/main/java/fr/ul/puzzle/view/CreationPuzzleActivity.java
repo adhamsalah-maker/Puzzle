@@ -79,6 +79,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         initialiserVues();
         initialiserSpinner();
         initialiserListeners();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void initialiserVues() {
@@ -258,5 +259,12 @@ public class CreationPuzzleActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Erreur ouverture caméra", Toast.LENGTH_SHORT).show();
         }
+
+
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }
