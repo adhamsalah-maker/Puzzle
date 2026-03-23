@@ -207,6 +207,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
             intent.putExtra("nbColonnes", nbColonnes);
             intent.putExtra("largeurImage", largeurImage);
             intent.putExtra("hauteurImage", hauteurImage);
+            getSharedPreferences("puzzle_save", MODE_PRIVATE).edit().clear().apply();
             startActivity(intent);
 
         } catch (Exception e) {

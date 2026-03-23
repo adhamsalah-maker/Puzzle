@@ -57,6 +57,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private String cheminDossierPuzzle;
     private List<ImageView> listePiecesCreees = new ArrayList<>();
     private android.widget.Button btnSauvegarder;
+    private boolean modeReprise = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,12 +128,18 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             gridZonePuzzle.post(() -> {
                 afficherZoneVide();
                 afficherPieces(cheminDossierPuzzle);
-                chargerPartieSauvegardee();
+
+                if (modeReprise) {
+                    chargerPartieSauvegardee();
+                }
             });
         } else {
             afficherZoneVide();
             tvTitreJeu.setText("Aucun puzzle reçu");
         }
+
+        modeReprise = getIntent().getBooleanExtra("modeReprise", false);
+        cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
     }
 
     @Override

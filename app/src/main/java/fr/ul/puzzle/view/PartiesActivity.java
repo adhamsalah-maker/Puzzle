@@ -179,6 +179,7 @@ public class PartiesActivity extends AppCompatActivity {
             intent.putExtra("nbColonnes", Integer.parseInt(donnees.get("nbColonnes")));
             intent.putExtra("largeurImage", Integer.parseInt(donnees.get("largeurImage")));
             intent.putExtra("hauteurImage", Integer.parseInt(donnees.get("hauteurImage")));
+            intent.putExtra("modeReprise", true);
             startActivity(intent);
         });
     }
