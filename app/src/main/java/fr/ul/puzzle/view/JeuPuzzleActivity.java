@@ -48,6 +48,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private android.widget.Button btnAide;
     private TextView tvNbAides;
     private int nbAidesRestantes = 3;
+    private String cheminDossierPuzzle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +69,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         Button btnApercu = findViewById(R.id.btnApercu);
         btnRotationGauche.setOnClickListener(v -> tournerPieceSelectionnee(-90));
         btnRotationDroite.setOnClickListener(v -> tournerPieceSelectionnee(90));
-        btnApercu.setOnClickListener(v -> {
-            Toast.makeText(this, "Aperçu cliqué", Toast.LENGTH_SHORT).show();
-        });
-        String cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
-        tvNbAides = findViewById(R.id.tvNbAides);
+        btnApercu.setOnClickListener(v -> afficherApercuModele());
+        cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");        tvNbAides = findViewById(R.id.tvNbAides);
         tvNbAides.setText(String.valueOf(nbAidesRestantes));
         btnAide = findViewById(R.id.btnAide);
         btnAide.setOnClickListener(v -> {
@@ -652,4 +650,39 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 .setDuration(300)
                 .start();
     }
+
+    private void afficherApercuModele() {
+        if (cheminDossierPuzzle == null) {
+            return;
+        }
+
+        File fichierImageOriginale = new File(cheminDossierPuzzle, "image_originale.png");
+
+        if (!fichierImageOriginale.exists()) {
+            Toast.makeText(this, "Image modèle introuvable", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeFile(fichierImageOriginale.getAbsolutePath());
+
+        if (bitmap == null) {
+            Toast.makeText(this, "Impossible de charger l’image modèle", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ImageView imageView = new ImageView(this);
+        imageView.setImageBitmap(bitmap);
+        imageView.setAdjustViewBounds(true);
+        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        imageView.setPadding(20, 20, 20, 20);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Aperçu du modèle")
+                .setView(imageView)
+                .setPositiveButton("Fermer", null)
+                .show();
+    }
+
+
+
 }
