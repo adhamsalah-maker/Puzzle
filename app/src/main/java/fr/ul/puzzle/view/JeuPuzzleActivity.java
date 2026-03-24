@@ -68,6 +68,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private long tempsDebut;
     private android.os.Handler handler = new android.os.Handler();
     private long tempsFinal = 0;
+    private long tempsEcouleAvantReprise = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +119,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
         largeurImage = getIntent().getIntExtra("largeurImage", 1);
         hauteurImage = getIntent().getIntExtra("hauteurImage", 1);
-
+        modeReprise = getIntent().getBooleanExtra("modeReprise", false);
+        modeTermine = getIntent().getBooleanExtra("modeTermine", false);
+        cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
+        cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
         gridPieces.setColumnCount(nbColonnes);
         gridPieces.setRowCount(nbLignes);
 
@@ -150,17 +154,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             tvTitreJeu.setText("Aucun puzzle reçu");
         }
 
-        modeReprise = getIntent().getBooleanExtra("modeReprise", false);
-        modeTermine = getIntent().getBooleanExtra("modeTermine", false);
-        cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
-        cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+
 
         tvZonePuzzle = findViewById(R.id.tvZonePuzzle);
         layoutRotation = findViewById(R.id.layoutRotation);
         imgPuzzleTermine = findViewById(R.id.imgPuzzleTermine);
 
         tvChrono = findViewById(R.id.tvChrono);
-        demarrerChrono();
+
+        if (modeTermine) {
+            afficherTempsTermine();
+        } else {
+            if (modeReprise) {
+                chargerTempsDepuisFichierPartie();
+            }
+            demarrerChrono();
+        }
     }
 
     @Override
@@ -1004,6 +1013,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             contenu.append("nbAidesRestantes=").append(nbAidesRestantes).append("\n");
             contenu.append("etat_cases=").append(etatCases).append("\n");
             contenu.append("date=").append(dateTexte).append("\n");
+            contenu.append("tempsEcoule=").append(obtenirTempsEcouleActuel()).append("\n");
 
             FileOutputStream fos = new FileOutputStream(fichierPartie, false);
             fos.write(contenu.toString().getBytes());
@@ -1019,7 +1029,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void demarrerChrono() {
-        tempsDebut = System.currentTimeMillis();
+        tempsDebut = System.currentTimeMillis() - tempsEcouleAvantReprise;
 
         handler.post(new Runnable() {
             @Override
@@ -1037,7 +1047,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
         });
     }
-
     private void arreterChrono() {
         tempsFinal = System.currentTimeMillis() - tempsDebut;
         handler.removeCallbacksAndMessages(null);
@@ -1064,4 +1073,70 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void afficherTempsTermine() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                tvChrono.setText("00:00");
+                return;
+            }
+
+            File fichierTemps = new File(cheminDossierPuzzle, "temps.txt");
+
+            if (!fichierTemps.exists()) {
+                tvChrono.setText("00:00");
+                return;
+            }
+
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fichierTemps));
+            String tempsLu = reader.readLine();
+            reader.close();
+
+            if (tempsLu != null && !tempsLu.trim().isEmpty()) {
+                tvChrono.setText(tempsLu.trim());
+            } else {
+                tvChrono.setText("00:00");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            tvChrono.setText("00:00");
+        }
+    }
+
+    private long obtenirTempsEcouleActuel() {
+        return System.currentTimeMillis() - tempsDebut;
+    }
+
+    private void chargerTempsDepuisFichierPartie() {
+        try {
+            if (cheminFichierPartie == null) {
+                tempsEcouleAvantReprise = 0;
+                return;
+            }
+
+            File fichierPartie = new File(cheminFichierPartie);
+
+            if (!fichierPartie.exists()) {
+                tempsEcouleAvantReprise = 0;
+                return;
+            }
+
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fichierPartie));
+            String ligne;
+
+            while ((ligne = reader.readLine()) != null) {
+                if (ligne.startsWith("tempsEcoule=")) {
+                    String valeur = ligne.substring("tempsEcoule=".length()).trim();
+                    tempsEcouleAvantReprise = Long.parseLong(valeur);
+                    break;
+                }
+            }
+
+            reader.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            tempsEcouleAvantReprise = 0;
+        }
+    }
 }
