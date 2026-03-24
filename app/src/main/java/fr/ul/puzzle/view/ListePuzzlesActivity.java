@@ -2,6 +2,7 @@ package fr.ul.puzzle.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -22,11 +23,19 @@ public class ListePuzzlesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_puzzles);
 
+        View root = findViewById(android.R.id.content);
+        root.setPadding(0, 120, 0, 0);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         listViewPuzzles = findViewById(R.id.listViewPuzzles);
 
         chargerPuzzles();
+
+        getWindow().getDecorView().setOnApplyWindowInsetsListener((v, insets) -> {
+            v.setPadding(0, insets.getSystemWindowInsetTop(), 0, 0);
+            return insets;
+        });
     }
 
     @Override
