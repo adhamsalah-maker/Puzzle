@@ -60,6 +60,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private android.widget.Button btnSauvegarder;
     private boolean modeReprise = false;
     private String cheminFichierPartie = null;
+    private boolean modeTermine = false;
+    private TextView tvZonePuzzle;
+    private android.widget.LinearLayout layoutRotation;
+    private ImageView imgPuzzleTermine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +135,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 afficherZoneVide();
                 afficherPieces(cheminDossierPuzzle);
 
-                if (modeReprise) {
+                if (modeTermine) {
+                    chargerPuzzleTermine();
+                } else if (modeReprise) {
                     chargerPartieSauvegardee();
                 }
             });
@@ -141,8 +147,15 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
 
         modeReprise = getIntent().getBooleanExtra("modeReprise", false);
+        modeTermine = getIntent().getBooleanExtra("modeTermine", false);
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+
+        tvZonePuzzle = findViewById(R.id.tvZonePuzzle);
+        layoutRotation = findViewById(R.id.layoutRotation);
+        imgPuzzleTermine = findViewById(R.id.imgPuzzleTermine);
+
+
 
     }
 
@@ -384,6 +397,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void afficherVictoire() {
+        marquerPuzzleCommeTermine();
         supprimerSauvegardePartie();
 
         new AlertDialog.Builder(this)
@@ -397,6 +411,24 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 })
                 .setCancelable(false)
                 .show();
+    }
+
+    private void marquerPuzzleCommeTermine() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            File dossierPuzzle = new File(cheminDossierPuzzle);
+            File fichierTermine = new File(dossierPuzzle, "termine.txt");
+
+            if (!fichierTermine.exists()) {
+                fichierTermine.createNewFile();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sauvegarderPartie() {
@@ -539,7 +571,39 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         mettreAJourProgression();
     }
 
-    private void supprimerSauvegardePartie() {
+    private void chargerPuzzleTermine() {
+
+        gridPieces.setVisibility(View.GONE);
+        gridZonePuzzle.setVisibility(View.GONE);
+        layoutRotation.setVisibility(View.GONE);
+        progressBarPuzzle.setVisibility(View.GONE);
+        tvProgressionPourcentage.setVisibility(View.GONE);
+        tvTitreJeu.setVisibility(View.GONE);
+
+        tvZonePuzzle.setText("Puzzle terminé");
+        imgPuzzleTermine.setVisibility(View.VISIBLE);
+
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            File fichierImageOriginale = new File(cheminDossierPuzzle, "image_originale.png");
+
+            if (!fichierImageOriginale.exists()) {
+                return;
+            }
+
+            Bitmap bitmap = BitmapFactory.decodeFile(fichierImageOriginale.getAbsolutePath());
+
+            if (bitmap != null) {
+                imgPuzzleTermine.setImageBitmap(bitmap);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }    private void supprimerSauvegardePartie() {
         try {
             // 1. supprimer le fichier exact de la partie ouverte
             if (cheminFichierPartie != null) {
