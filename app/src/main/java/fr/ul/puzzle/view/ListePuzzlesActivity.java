@@ -97,6 +97,7 @@ public class ListePuzzlesActivity extends AppCompatActivity {
                 TextView tvTemps = convertView.findViewById(R.id.tvTempsPuzzle);
                 ImageView img = convertView.findViewById(R.id.imgPuzzle);
                 ImageButton btnSupprimer = convertView.findViewById(R.id.btnSupprimerPuzzle);
+                TextView tvScore = convertView.findViewById(R.id.tvScorePuzzle);
 
                 File dossier = fichiersPuzzles.get(position);
 
@@ -120,6 +121,23 @@ public class ListePuzzlesActivity extends AppCompatActivity {
                 }
 
                 tvTemps.setText(temps);
+
+                File fichierScore = new File(dossier, "score.txt");
+                String score = "0";
+
+                if (fichierScore.exists()) {
+                    try {
+                        java.util.Scanner scanner = new java.util.Scanner(fichierScore);
+                        if (scanner.hasNextLine()) {
+                            score = scanner.nextLine();
+                        }
+                        scanner.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                tvScore.setText("Score : " + score);
 
                 // image du puzzle
                 File fichierImage = new File(dossier, "image_originale.png");

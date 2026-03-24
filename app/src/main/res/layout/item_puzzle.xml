@@ -35,6 +35,13 @@
             android:layout_height="wrap_content"
             android:text="00:00"
             android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvScorePuzzle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Score : 0"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <ImageButton
