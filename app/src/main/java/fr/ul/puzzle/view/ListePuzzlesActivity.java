@@ -62,7 +62,23 @@ public class ListePuzzlesActivity extends AppCompatActivity {
                 File fichierTermine = new File(dossier, "termine.txt");
 
                 if (fichierTermine.exists()) {
-                    nomsPuzzles.add(dossier.getName());
+
+                    File fichierTemps = new File(dossier, "temps.txt");
+                    String temps = "";
+
+                    if (fichierTemps.exists()) {
+                        try {
+                            java.util.Scanner scanner = new java.util.Scanner(fichierTemps);
+                            if (scanner.hasNextLine()) {
+                                temps = scanner.nextLine();
+                            }
+                            scanner.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    nomsPuzzles.add(dossier.getName() + " (" + temps + ")");
                     fichiersPuzzles.add(dossier);
                 }
             }

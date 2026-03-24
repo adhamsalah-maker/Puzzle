@@ -402,6 +402,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     private void afficherVictoire() {
         arreterChrono();
+        sauvegarderTemps();
         marquerPuzzleCommeTermine();
         supprimerSauvegardePartie();
 
