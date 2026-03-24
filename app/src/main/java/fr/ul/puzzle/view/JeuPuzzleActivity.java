@@ -69,6 +69,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private android.os.Handler handler = new android.os.Handler();
     private long tempsFinal = 0;
     private long tempsEcouleAvantReprise = 0;
+    private boolean partieSauvegardeeDansFichier = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 utiliserAide();
                 nbAidesRestantes--;
 
+                marquerPartieCommeNonSauvegardee();
+
                 tvNbAides.setText(String.valueOf(nbAidesRestantes));
 
                 sauvegarderPartie();
@@ -112,6 +115,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         btnSauvegarder.setOnClickListener(v -> {
             sauvegarderPartie();
             sauvegarderPartieDansFichier();
+            partieSauvegardeeDansFichier = true;
         });
 
 
@@ -123,6 +127,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         modeTermine = getIntent().getBooleanExtra("modeTermine", false);
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+        partieSauvegardeeDansFichier = modeReprise;
         gridPieces.setColumnCount(nbColonnes);
         gridPieces.setRowCount(nbLignes);
 
@@ -170,11 +175,18 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
             demarrerChrono();
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                demanderConfirmationAvantQuitter();
+            }
+        });
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        demanderConfirmationAvantQuitter();
         return true;
     }
 
@@ -332,6 +344,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
+
+                        marquerPartieCommeNonSauvegardee();
 
                         ImageView piecePlacee = pieceSelectionnee;
                         piecePlacee.setOnClickListener(v2 -> remettrePieceDansGrille(piecePlacee, caseVide, fondCase));
@@ -750,7 +764,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show();
                     }
-
+                    marquerPartieCommeNonSauvegardee();
                     mettreAJourProgression();
                     sauvegarderPartie();
                     verifierVictoire();
@@ -819,7 +833,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         caseVide.setTag(R.id.tag_piece_placee, null);
         caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
-
+        marquerPartieCommeNonSauvegardee();
         mettreAJourProgression();
         sauvegarderPartie();
     }
@@ -858,6 +872,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         pieceSelectionnee.setRotation(nouvelleRotation);
         pieceSelectionnee.setTag(R.id.tag_rotation_piece, nouvelleRotation);
+        marquerPartieCommeNonSauvegardee();
     }
 
     private void utiliserAide() {
@@ -1224,6 +1239,44 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void marquerPartieCommeNonSauvegardee() {
+        if (!modeTermine) {
+            partieSauvegardeeDansFichier = false;
+        }
+    }
 
+    private void quitterVersAccueil() {
+        Intent intent = new Intent(JeuPuzzleActivity.this, AccueilActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void demanderConfirmationAvantQuitter() {
+        if (modeTermine) {
+            quitterVersAccueil();
+            return;
+        }
+
+        if (partieSauvegardeeDansFichier) {
+            quitterVersAccueil();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Partie non sauvegardée")
+                .setMessage("Cette partie n’a pas été sauvegardée. Voulez-vous la sauvegarder avant de quitter ?")
+                .setPositiveButton("Sauvegarder", (dialog, which) -> {
+                    sauvegarderPartie();
+                    sauvegarderPartieDansFichier();
+                    partieSauvegardeeDansFichier = true;
+                    quitterVersAccueil();
+                })
+                .setNegativeButton("Quitter", (dialog, which) -> {
+                    quitterVersAccueil();
+                })
+                .setNeutralButton("Annuler", null)
+                .show();
+    }
 
 }
