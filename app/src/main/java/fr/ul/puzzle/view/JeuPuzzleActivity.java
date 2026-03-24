@@ -421,6 +421,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         editor.apply();
     }
 
+
+
     private void chargerPartieSauvegardee() {
         SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
 
@@ -527,8 +529,32 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void supprimerSauvegardePartie() {
-        SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
-        prefs.edit().clear().apply();
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            File dossierParties = getExternalFilesDir("parties");
+            if (dossierParties == null) {
+                return;
+            }
+
+            File dossierPuzzle = new File(cheminDossierPuzzle);
+            String nomPuzzle = dossierPuzzle.getName();
+
+            String nomFichier = nomPuzzle.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            File fichierPartie = new File(dossierParties, "partie_" + nomFichier + ".txt");
+
+            if (fichierPartie.exists()) {
+                fichierPartie.delete();
+            }
+
+            getSharedPreferences("puzzle_save", MODE_PRIVATE).edit().clear().apply();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

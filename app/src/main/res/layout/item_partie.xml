@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:descendantFocusability="afterDescendants">
 
     <ImageView
         android:id="@+id/imgPuzzle"
@@ -42,6 +43,8 @@
         android:layout_height="40dp"
         android:background="@android:color/transparent"
         android:src="@android:drawable/ic_menu_delete"
-        android:contentDescription="Supprimer la partie" />
+        android:contentDescription="Supprimer la partie"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
 </LinearLayout>

@@ -28,6 +28,8 @@ import java.util.Map;
 
 import fr.ul.puzzle.R;
 import fr.ul.puzzle.model.PartieSauvegardee;
+import java.util.LinkedHashMap;
+
 
 public class PartiesActivity extends AppCompatActivity {
 
@@ -95,6 +97,8 @@ public class PartiesActivity extends AppCompatActivity {
         fichiersParties.clear();
         parties.clear();
 
+        LinkedHashMap<String, File> dernierFichierParPuzzle = new LinkedHashMap<>();
+
         for (File fichier : fichiers) {
             Map<String, String> donnees = lireFichierPartie(fichier);
 
@@ -106,6 +110,23 @@ public class PartiesActivity extends AppCompatActivity {
             File dossierPuzzle = new File(cheminDossierPuzzle);
             String nomPuzzle = dossierPuzzle.getName();
 
+            // comme les fichiers sont déjà triés du plus récent au plus ancien,
+            // on garde seulement le premier rencontré pour chaque puzzle
+            if (!dernierFichierParPuzzle.containsKey(nomPuzzle)) {
+                dernierFichierParPuzzle.put(nomPuzzle, fichier);
+            }
+        }
+
+        for (String nomPuzzle : dernierFichierParPuzzle.keySet()) {
+            File fichier = dernierFichierParPuzzle.get(nomPuzzle);
+            Map<String, String> donnees = lireFichierPartie(fichier);
+
+            String cheminDossierPuzzle = donnees.get("cheminDossierPuzzle");
+            if (cheminDossierPuzzle == null || cheminDossierPuzzle.isEmpty()) {
+                continue;
+            }
+
+            File dossierPuzzle = new File(cheminDossierPuzzle);
             File fichierImage = new File(dossierPuzzle, "image_originale.png");
             String cheminImage = fichierImage.exists() ? fichierImage.getAbsolutePath() : "";
 
@@ -150,6 +171,27 @@ public class PartiesActivity extends AppCompatActivity {
 
                 PartieSauvegardee partie = parties.get(position);
 
+                vue.setOnClickListener(v -> {
+                    File fichierSelectionne = fichiersParties.get(position);
+                    Map<String, String> donnees = lireFichierPartie(fichierSelectionne);
+
+                    String cheminDossierPuzzle = donnees.get("cheminDossierPuzzle");
+
+                    if (cheminDossierPuzzle == null || cheminDossierPuzzle.isEmpty()) {
+                        Toast.makeText(PartiesActivity.this, "Partie invalide", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Intent intent = new Intent(PartiesActivity.this, JeuPuzzleActivity.class);
+                    intent.putExtra("dossierPuzzle", cheminDossierPuzzle);
+                    intent.putExtra("nbLignes", Integer.parseInt(donnees.get("nbLignes")));
+                    intent.putExtra("nbColonnes", Integer.parseInt(donnees.get("nbColonnes")));
+                    intent.putExtra("largeurImage", Integer.parseInt(donnees.get("largeurImage")));
+                    intent.putExtra("hauteurImage", Integer.parseInt(donnees.get("hauteurImage")));
+                    intent.putExtra("modeReprise", true);
+                    startActivity(intent);
+                });
+
                 tvNomPuzzle.setText(partie.getNomPuzzle());
                 tvNomFichier.setText(partie.getNomFichier());
 
@@ -181,25 +223,6 @@ public class PartiesActivity extends AppCompatActivity {
             }
         });
 
-        listViewParties.setOnItemClickListener((parent, view, position, id) -> {
-            File fichierSelectionne = fichiersParties.get(position);
-            Map<String, String> donnees = lireFichierPartie(fichierSelectionne);
 
-            String cheminDossierPuzzle = donnees.get("cheminDossierPuzzle");
-
-            if (cheminDossierPuzzle == null || cheminDossierPuzzle.isEmpty()) {
-                Toast.makeText(this, "Partie invalide", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Intent intent = new Intent(PartiesActivity.this, JeuPuzzleActivity.class);
-            intent.putExtra("dossierPuzzle", cheminDossierPuzzle);
-            intent.putExtra("nbLignes", Integer.parseInt(donnees.get("nbLignes")));
-            intent.putExtra("nbColonnes", Integer.parseInt(donnees.get("nbColonnes")));
-            intent.putExtra("largeurImage", Integer.parseInt(donnees.get("largeurImage")));
-            intent.putExtra("hauteurImage", Integer.parseInt(donnees.get("hauteurImage")));
-            intent.putExtra("modeReprise", true);
-            startActivity(intent);
-        });
     }
 }
