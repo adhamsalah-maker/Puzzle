@@ -54,7 +54,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private TextView tvProgressionPourcentage;
     private android.widget.Button btnAide;
     private TextView tvNbAides;
-    private int nbAidesRestantes = 3;
+    private int nbAidesRestantes = 16;
     private String cheminDossierPuzzle;
     private List<ImageView> listePiecesCreees = new ArrayList<>();
     private android.widget.Button btnSauvegarder;
@@ -416,12 +416,15 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void afficherVictoire() {
         arreterChrono();
         sauvegarderTemps();
+        sauvegarderScore();
         marquerPuzzleCommeTermine();
         supprimerSauvegardePartie();
 
+        int scoreFinal = calculerScoreFinal();
+
         new AlertDialog.Builder(this)
                 .setTitle("Puzzle terminé")
-                .setMessage("Bravo ! Vous avez réussi le puzzle.")
+                .setMessage("Bravo ! Vous avez réussi le puzzle.\n\nScore : " + scoreFinal)
                 .setPositiveButton("OK", (dialog, which) -> {
                     Intent intent = new Intent(JeuPuzzleActivity.this, AccueilActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1181,8 +1184,55 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private int calculerScoreFinal() {
+        int nbPieces = nbLignes * nbColonnes;
 
+        int scoreBase;
+        switch (nbPieces) {
+            case 16:
+                scoreBase = 1000;
+                break;
+            case 32:
+                scoreBase = 2000;
+                break;
+            case 64:
+                scoreBase = 4000;
+                break;
+            case 128:
+                scoreBase = 8000;
+                break;
+            default:
+                scoreBase = 1000;
+                break;
+        }
 
+        int aidesUtilisees = 3 - nbAidesRestantes;
+        int penaliteAides = aidesUtilisees * 200;
+
+        int tempsSecondes = (int) (tempsFinal / 1000);
+        int penaliteTemps = tempsSecondes * 2;
+
+        int score = scoreBase - penaliteTemps - penaliteAides;
+
+        return Math.max(score, 0);
+    }
+
+    private void sauvegarderScore() {
+        try {
+            if (cheminDossierPuzzle == null) return;
+
+            int scoreFinal = calculerScoreFinal();
+
+            File fichierScore = new File(cheminDossierPuzzle, "score.txt");
+
+            java.io.FileWriter writer = new java.io.FileWriter(fichierScore);
+            writer.write(String.valueOf(scoreFinal));
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
