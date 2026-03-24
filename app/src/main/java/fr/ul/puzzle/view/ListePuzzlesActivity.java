@@ -5,7 +5,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
@@ -44,6 +49,18 @@ public class ListePuzzlesActivity extends AppCompatActivity {
         return true;
     }
 
+    private void supprimerDossier(File dossier) {
+        if (dossier.isDirectory()) {
+            File[] fichiers = dossier.listFiles();
+            if (fichiers != null) {
+                for (File file : fichiers) {
+                    supprimerDossier(file);
+                }
+            }
+        }
+        dossier.delete();
+    }
+
     private void chargerPuzzles() {
 
         File dossierPuzzles = getExternalFilesDir("puzzles");
@@ -62,45 +79,78 @@ public class ListePuzzlesActivity extends AppCompatActivity {
                 File fichierTermine = new File(dossier, "termine.txt");
 
                 if (fichierTermine.exists()) {
-
-                    File fichierTemps = new File(dossier, "temps.txt");
-                    String temps = "";
-
-                    if (fichierTemps.exists()) {
-                        try {
-                            java.util.Scanner scanner = new java.util.Scanner(fichierTemps);
-                            if (scanner.hasNextLine()) {
-                                temps = scanner.nextLine();
-                            }
-                            scanner.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    nomsPuzzles.add(dossier.getName() + " (" + temps + ")");
+                    nomsPuzzles.add(dossier.getName());
                     fichiersPuzzles.add(dossier);
                 }
             }
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                nomsPuzzles
-        );
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 0, nomsPuzzles) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+
+                if (convertView == null) {
+                    convertView = getLayoutInflater().inflate(R.layout.item_puzzle, parent, false);
+                }
+
+                TextView tvNom = convertView.findViewById(R.id.tvNomPuzzle);
+                TextView tvTemps = convertView.findViewById(R.id.tvTempsPuzzle);
+                ImageView img = convertView.findViewById(R.id.imgPuzzle);
+                ImageButton btnSupprimer = convertView.findViewById(R.id.btnSupprimerPuzzle);
+
+                File dossier = fichiersPuzzles.get(position);
+
+                // nom du puzzle
+                tvNom.setText(dossier.getName());
+
+                // temps
+                File fichierTemps = new File(dossier, "temps.txt");
+                String temps = "";
+
+                if (fichierTemps.exists()) {
+                    try {
+                        java.util.Scanner scanner = new java.util.Scanner(fichierTemps);
+                        if (scanner.hasNextLine()) {
+                            temps = scanner.nextLine();
+                        }
+                        scanner.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                tvTemps.setText(temps);
+
+                // image du puzzle
+                File fichierImage = new File(dossier, "image_originale.png");
+                if (fichierImage.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(fichierImage.getAbsolutePath());
+                    img.setImageBitmap(bitmap);
+                } else {
+                    img.setImageDrawable(null);
+                }
+
+                // suppression
+                btnSupprimer.setFocusable(false);
+                btnSupprimer.setOnClickListener(v -> {
+                    supprimerDossier(dossier);
+                    fichiersPuzzles.remove(position);
+                    nomsPuzzles.remove(position);
+                    notifyDataSetChanged();
+                });
+
+                // clic sur la ligne -> ouvrir puzzle terminé
+                convertView.setOnClickListener(v -> {
+                    Intent intent = new Intent(ListePuzzlesActivity.this, JeuPuzzleActivity.class);
+                    intent.putExtra("dossierPuzzle", dossier.getAbsolutePath());
+                    intent.putExtra("modeReprise", false);
+                    intent.putExtra("modeTermine", true);
+                    startActivity(intent);
+                });
+
+                return convertView;
+            }
+        };
 
         listViewPuzzles.setAdapter(adapter);
-
-        listViewPuzzles.setOnItemClickListener((parent, view, position, id) -> {
-
-            File dossierSelectionne = fichiersPuzzles.get(position);
-
-            Intent intent = new Intent(ListePuzzlesActivity.this, JeuPuzzleActivity.class);
-            intent.putExtra("dossierPuzzle", dossierSelectionne.getAbsolutePath());
-            intent.putExtra("modeReprise", false);
-            intent.putExtra("modeTermine", true);
-            startActivity(intent);
-        });
-    }
-}
+    }}
