@@ -500,10 +500,32 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
 
     private void chargerPartieSauvegardee() {
-        SharedPreferences prefs = getSharedPreferences("puzzle_save", MODE_PRIVATE);
+        String etatCases = "";
+        nbAidesRestantes = 3;
 
-        String etatCases = prefs.getString("etat_cases", "");
-        nbAidesRestantes = prefs.getInt("nbAidesRestantes", 3);
+        try {
+            if (cheminFichierPartie != null) {
+                File fichierPartie = new File(cheminFichierPartie);
+
+                if (fichierPartie.exists()) {
+                    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fichierPartie));
+                    String ligne;
+
+                    while ((ligne = reader.readLine()) != null) {
+                        if (ligne.startsWith("etat_cases=")) {
+                            etatCases = ligne.substring("etat_cases=".length()).trim();
+                        } else if (ligne.startsWith("nbAidesRestantes=")) {
+                            String valeur = ligne.substring("nbAidesRestantes=".length()).trim();
+                            nbAidesRestantes = Integer.parseInt(valeur);
+                        }
+                    }
+
+                    reader.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         tvNbAides.setText(String.valueOf(nbAidesRestantes));
 
@@ -599,7 +621,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         mettreAJourProgression();
     }
-
     private void chargerPuzzleTermine() {
 
         gridPieces.setVisibility(View.GONE);
@@ -1268,9 +1289,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     quitterVersAccueil();
                 })
                 .setNegativeButton("Quitter", (dialog, which) -> {
+                    supprimerSauvegardeTemporaire();
                     quitterVersAccueil();
                 })
                 .setNeutralButton("Annuler", null)
                 .show();
+    }
+
+    private void supprimerSauvegardeTemporaire() {
+        getSharedPreferences("puzzle_save", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
     }
 }
