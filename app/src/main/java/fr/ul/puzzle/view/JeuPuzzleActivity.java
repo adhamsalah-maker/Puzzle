@@ -67,6 +67,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private TextView tvChrono;
     private long tempsDebut;
     private android.os.Handler handler = new android.os.Handler();
+    private long tempsFinal = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -400,6 +401,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void afficherVictoire() {
+        arreterChrono();
         marquerPuzzleCommeTermine();
         supprimerSauvegardePartie();
 
@@ -606,7 +608,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }    private void supprimerSauvegardePartie() {
+    }
+
+    private void supprimerSauvegardePartie() {
         try {
             // 1. supprimer le fichier exact de la partie ouverte
             if (cheminFichierPartie != null) {
@@ -1031,6 +1035,32 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 handler.postDelayed(this, 1000);
             }
         });
+    }
+
+    private void arreterChrono() {
+        tempsFinal = System.currentTimeMillis() - tempsDebut;
+        handler.removeCallbacksAndMessages(null);
+    }
+
+    private void sauvegarderTemps() {
+        try {
+            if (cheminDossierPuzzle == null) return;
+
+            File fichierTemps = new File(cheminDossierPuzzle, "temps.txt");
+
+            int secondes = (int) (tempsFinal / 1000);
+            int minutes = secondes / 60;
+            secondes = secondes % 60;
+
+            String temps = String.format("%02d:%02d", minutes, secondes);
+
+            java.io.FileWriter writer = new java.io.FileWriter(fichierTemps);
+            writer.write(temps);
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
