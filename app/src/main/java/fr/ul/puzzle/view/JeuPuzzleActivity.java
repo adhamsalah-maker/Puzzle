@@ -1,5 +1,6 @@
 package fr.ul.puzzle.view;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -58,6 +59,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private List<ImageView> listePiecesCreees = new ArrayList<>();
     private android.widget.Button btnSauvegarder;
     private boolean modeReprise = false;
+    private String cheminFichierPartie = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,6 +142,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         modeReprise = getIntent().getBooleanExtra("modeReprise", false);
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
+        cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+
     }
 
     @Override
@@ -381,10 +385,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     private void afficherVictoire() {
         supprimerSauvegardePartie();
+
         new AlertDialog.Builder(this)
                 .setTitle("Puzzle terminé")
                 .setMessage("Bravo ! Vous avez réussi le puzzle.")
-                .setPositiveButton("OK", null)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    Intent intent = new Intent(JeuPuzzleActivity.this, AccueilActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setCancelable(false)
                 .show();
     }
 
@@ -530,33 +541,24 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     private void supprimerSauvegardePartie() {
         try {
-            if (cheminDossierPuzzle == null) {
-                return;
+            // 1. supprimer le fichier exact de la partie ouverte
+            if (cheminFichierPartie != null) {
+                File fichierPartie = new File(cheminFichierPartie);
+                if (fichierPartie.exists()) {
+                    fichierPartie.delete();
+                }
             }
 
-            File dossierParties = getExternalFilesDir("parties");
-            if (dossierParties == null) {
-                return;
-            }
-
-            File dossierPuzzle = new File(cheminDossierPuzzle);
-            String nomPuzzle = dossierPuzzle.getName();
-
-            String nomFichier = nomPuzzle.replaceAll("[^a-zA-Z0-9_-]", "_");
-
-            File fichierPartie = new File(dossierParties, "partie_" + nomFichier + ".txt");
-
-            if (fichierPartie.exists()) {
-                fichierPartie.delete();
-            }
-
-            getSharedPreferences("puzzle_save", MODE_PRIVATE).edit().clear().apply();
+            // 2. supprimer aussi la sauvegarde temporaire globale
+            getSharedPreferences("puzzle_save", MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .apply();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     private boolean estPieceBienPlacee(ImageView piece, FrameLayout casePuzzle) {
         if (piece == null || casePuzzle == null) {
@@ -874,9 +876,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         imageView.setPadding(20, 20, 20, 20);
 
         new AlertDialog.Builder(this)
-                .setTitle("Aperçu du modèle")
-                .setView(imageView)
-                .setPositiveButton("Fermer", null)
+                .setTitle("Puzzle terminé")
+                .setMessage("Bravo ! Vous avez réussi le puzzle.")
+                .setPositiveButton("OK", (dialog, which) -> {
+
+                    Intent intent = new Intent(JeuPuzzleActivity.this, AccueilActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+
+                    finish(); // ferme l'écran actuel
+
+                })
                 .show();
     }
 

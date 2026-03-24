@@ -189,6 +189,7 @@ public class PartiesActivity extends AppCompatActivity {
                     intent.putExtra("largeurImage", Integer.parseInt(donnees.get("largeurImage")));
                     intent.putExtra("hauteurImage", Integer.parseInt(donnees.get("hauteurImage")));
                     intent.putExtra("modeReprise", true);
+                    intent.putExtra("cheminFichierPartie", fichierSelectionne.getAbsolutePath());
                     startActivity(intent);
                 });
 
