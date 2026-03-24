@@ -13,7 +13,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
@@ -166,16 +168,19 @@ public class PartiesActivity extends AppCompatActivity {
 
                 ImageView imgPuzzle = vue.findViewById(R.id.imgPuzzle);
                 TextView tvNomPuzzle = vue.findViewById(R.id.tvNomPuzzle);
-                TextView tvNomFichier = vue.findViewById(R.id.tvNomFichier);
+                TextView tvDatePartie = vue.findViewById(R.id.tvDatePartie);
+                TextView tvProgressionPartie = vue.findViewById(R.id.tvProgressionPartie);
                 ImageButton btnSupprimerPartie = vue.findViewById(R.id.btnSupprimerPartie);
 
                 PartieSauvegardee partie = parties.get(position);
+                File fichierPartie = fichiersParties.get(position);
+                Map<String, String> donnees = lireFichierPartie(fichierPartie);
 
                 vue.setOnClickListener(v -> {
                     File fichierSelectionne = fichiersParties.get(position);
-                    Map<String, String> donnees = lireFichierPartie(fichierSelectionne);
+                    Map<String, String> donneesPartie = lireFichierPartie(fichierSelectionne);
 
-                    String cheminDossierPuzzle = donnees.get("cheminDossierPuzzle");
+                    String cheminDossierPuzzle = donneesPartie.get("cheminDossierPuzzle");
 
                     if (cheminDossierPuzzle == null || cheminDossierPuzzle.isEmpty()) {
                         Toast.makeText(PartiesActivity.this, "Partie invalide", Toast.LENGTH_SHORT).show();
@@ -184,17 +189,22 @@ public class PartiesActivity extends AppCompatActivity {
 
                     Intent intent = new Intent(PartiesActivity.this, JeuPuzzleActivity.class);
                     intent.putExtra("dossierPuzzle", cheminDossierPuzzle);
-                    intent.putExtra("nbLignes", Integer.parseInt(donnees.get("nbLignes")));
-                    intent.putExtra("nbColonnes", Integer.parseInt(donnees.get("nbColonnes")));
-                    intent.putExtra("largeurImage", Integer.parseInt(donnees.get("largeurImage")));
-                    intent.putExtra("hauteurImage", Integer.parseInt(donnees.get("hauteurImage")));
+                    intent.putExtra("nbLignes", Integer.parseInt(donneesPartie.get("nbLignes")));
+                    intent.putExtra("nbColonnes", Integer.parseInt(donneesPartie.get("nbColonnes")));
+                    intent.putExtra("largeurImage", Integer.parseInt(donneesPartie.get("largeurImage")));
+                    intent.putExtra("hauteurImage", Integer.parseInt(donneesPartie.get("hauteurImage")));
                     intent.putExtra("modeReprise", true);
                     intent.putExtra("cheminFichierPartie", fichierSelectionne.getAbsolutePath());
                     startActivity(intent);
                 });
 
                 tvNomPuzzle.setText(partie.getNomPuzzle());
-                tvNomFichier.setText(partie.getNomFichier());
+
+                String dateSauvegarde = donnees.get("date");
+                String dateFormatee = formaterDateSauvegarde(dateSauvegarde);
+                tvDatePartie.setText("Dernière sauvegarde : " + dateFormatee);
+                int progression = calculerProgression(donnees);
+                tvProgressionPartie.setText("Progression : " + progression + "%");
 
                 btnSupprimerPartie.setOnClickListener(v -> {
                     new androidx.appcompat.app.AlertDialog.Builder(PartiesActivity.this)
@@ -222,8 +232,71 @@ public class PartiesActivity extends AppCompatActivity {
 
                 return vue;
             }
+
+
+
         });
 
 
+    }
+
+    private int calculerProgression(Map<String, String> donnees) {
+        try {
+            String etatCases = donnees.get("etat_cases");
+            String nbLignesStr = donnees.get("nbLignes");
+            String nbColonnesStr = donnees.get("nbColonnes");
+
+            if (etatCases == null || nbLignesStr == null || nbColonnesStr == null) {
+                return 0;
+            }
+
+            int nbLignes = Integer.parseInt(nbLignesStr);
+            int nbColonnes = Integer.parseInt(nbColonnesStr);
+            int totalPieces = nbLignes * nbColonnes;
+
+            if (totalPieces == 0) {
+                return 0;
+            }
+
+            if (etatCases.trim().isEmpty()) {
+                return 0;
+            }
+
+            String[] placements = etatCases.split(";");
+            int nbPiecesPlacees = 0;
+
+            for (String placement : placements) {
+                if (!placement.trim().isEmpty()) {
+                    nbPiecesPlacees++;
+                }
+            }
+
+            return (nbPiecesPlacees * 100) / totalPieces;
+
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private String formaterDateSauvegarde(String dateBrute) {
+        try {
+            if (dateBrute == null || dateBrute.isEmpty()) {
+                return "--";
+            }
+
+            SimpleDateFormat formatEntree = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+            SimpleDateFormat formatSortie = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm", Locale.getDefault());
+
+            Date date = formatEntree.parse(dateBrute);
+
+            if (date == null) {
+                return dateBrute;
+            }
+
+            return formatSortie.format(date);
+
+        } catch (Exception e) {
+            return dateBrute;
+        }
     }
 }
