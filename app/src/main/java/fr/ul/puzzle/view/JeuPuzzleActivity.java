@@ -1216,7 +1216,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         return Math.max(score, 0);
     }
-
     private void sauvegarderScore() {
         try {
             if (cheminDossierPuzzle == null) return;
@@ -1233,7 +1232,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 
 
 
