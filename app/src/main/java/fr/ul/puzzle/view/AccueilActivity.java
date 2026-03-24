@@ -13,6 +13,7 @@ public class AccueilActivity extends AppCompatActivity {
     private Button btnCreerPuzzle;
     private Button btnMesPuzzles;
     private Button btnMesParties;
+    private Button btnStatistiques;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +23,7 @@ public class AccueilActivity extends AppCompatActivity {
         btnCreerPuzzle = findViewById(R.id.btnCreerPuzzle);
         btnMesPuzzles = findViewById(R.id.btnMesPuzzles);
         btnMesParties = findViewById(R.id.btnMesParties);
+        btnStatistiques = findViewById(R.id.btnStatistiques);
 
         btnCreerPuzzle.setOnClickListener(v -> {
             Intent intent = new Intent(AccueilActivity.this, CreationPuzzleActivity.class);
@@ -35,6 +37,11 @@ public class AccueilActivity extends AppCompatActivity {
 
         btnMesParties.setOnClickListener(v -> {
             Intent intent = new Intent(AccueilActivity.this, PartiesActivity.class);
+            startActivity(intent);
+        });
+
+        btnStatistiques.setOnClickListener(v -> {
+            Intent intent = new Intent(AccueilActivity.this, StatistiquesActivity.class);
             startActivity(intent);
         });
     }

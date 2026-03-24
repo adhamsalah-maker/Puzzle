@@ -33,6 +33,13 @@
         android:id="@+id/btnMesParties"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mes parties"/>
+        android:text="Mes parties"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/btnStatistiques"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Statistiques"/>
 
 </LinearLayout>
