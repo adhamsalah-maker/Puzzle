@@ -128,8 +128,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         Button btnPrecedent = findViewById(R.id.btnPrecedent);
         Button btnSuivant = findViewById(R.id.btnSuivant);
 
-       // btnSuivant.setOnClickListener(v -> allerEtapeSuivante());
-       // btnPrecedent.setOnClickListener(v -> allerEtapePrecedente());
+       btnSuivant.setOnClickListener(v -> allerEtapeSuivante());
+       btnPrecedent.setOnClickListener(v -> allerEtapePrecedente());
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
@@ -464,8 +464,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         chargerHistorique();
         indexReplay = -1;
 
-     //   LinearLayout layoutReplay = findViewById(R.id.layoutReplay);
-     //   layoutReplay.setVisibility(View.VISIBLE);
+        LinearLayout layoutReplay = findViewById(R.id.layoutReplay);
+        layoutReplay.setVisibility(View.VISIBLE);
 
         new AlertDialog.Builder(this)
                 .setTitle("Puzzle terminé")
@@ -1433,10 +1433,131 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void allerEtapeSuivante() {
+        if (historiqueActions == null || historiqueActions.isEmpty()) {
+            return;
+        }
 
+        if (indexReplay + 1 >= historiqueActions.size()) {
+            return;
+        }
 
+        indexReplay++;
+        appliquerActionReplay(historiqueActions.get(indexReplay));
+    }
 
+    private void allerEtapePrecedente() {
+        if (historiqueActions == null || historiqueActions.isEmpty()) {
+            return;
+        }
 
+        if (indexReplay < 0) {
+            return;
+        }
+
+        indexReplay--;
+        reconstruireReplayDepuisDebut();
+    }
+
+    private void reconstruireReplayDepuisDebut() {
+        afficherZoneVide();
+        afficherPieces(cheminDossierPuzzle);
+
+        for (int i = 0; i <= indexReplay; i++) {
+            appliquerActionReplay(historiqueActions.get(i));
+        }
+    }
+
+    private void appliquerActionReplay(String action) {
+        try {
+            if (action == null || action.trim().isEmpty()) {
+                return;
+            }
+
+            String[] parties = action.split(";");
+            String typeAction = parties[0];
+
+            int indexPiece = -1;
+            int ligne = -1;
+            int colonne = -1;
+            int rotation = 0;
+
+            for (String partie : parties) {
+                if (partie.startsWith("piece=")) {
+                    indexPiece = Integer.parseInt(partie.substring("piece=".length()));
+                } else if (partie.startsWith("ligne=")) {
+                    ligne = Integer.parseInt(partie.substring("ligne=".length()));
+                } else if (partie.startsWith("colonne=")) {
+                    colonne = Integer.parseInt(partie.substring("colonne=".length()));
+                } else if (partie.startsWith("rotation=")) {
+                    rotation = Integer.parseInt(partie.substring("rotation=".length()));
+                }
+            }
+
+            if ("PLACER".equals(typeAction)) {
+                placerPieceReplay(indexPiece, ligne, colonne, rotation, false);
+            } else if ("AIDE".equals(typeAction)) {
+                placerPieceReplay(indexPiece, ligne, colonne, rotation, true);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void placerPieceReplay(int indexPiece, int ligne, int colonne, int rotation, boolean estAide) {
+        ImageView pieceATrouver = null;
+
+        for (ImageView piece : listePiecesCreees) {
+            Integer index = (Integer) piece.getTag(R.id.tag_piece_index);
+            if (index != null && index == indexPiece) {
+                pieceATrouver = piece;
+                break;
+            }
+        }
+
+        if (pieceATrouver == null) {
+            return;
+        }
+
+        FrameLayout caseTrouvee = null;
+
+        for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+            FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+            PositionCase positionCase = (PositionCase) casePuzzle.getTag(R.id.tag_position_case);
+
+            if (positionCase != null
+                    && positionCase.getLigne() == ligne
+                    && positionCase.getColonne() == colonne) {
+                caseTrouvee = casePuzzle;
+                break;
+            }
+        }
+
+        if (caseTrouvee == null) {
+            return;
+        }
+
+        retirerPieceDeSonParent(pieceATrouver);
+
+        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        pieceATrouver.setLayoutParams(pieceParams);
+        pieceATrouver.setScaleType(ImageView.ScaleType.FIT_XY);
+        pieceATrouver.setRotation(rotation);
+        pieceATrouver.setTag(R.id.tag_rotation_piece, rotation);
+
+        caseTrouvee.addView(pieceATrouver);
+        caseTrouvee.setTag(R.id.tag_piece_placee, pieceATrouver);
+
+        if (estAide) {
+            caseTrouvee.setBackgroundResource(R.drawable.case_puzzle_faux);
+        } else {
+            mettreAJourApparenceCase(caseTrouvee, pieceATrouver);
+        }
+    }
 
 
 
