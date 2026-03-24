@@ -128,13 +128,12 @@ public class StatistiquesActivity extends AppCompatActivity {
 
     private void afficherResultats(int nb, int meilleurTemps, int meilleurScore, int totalTemps, int totalScore) {
 
-        tvNbPuzzlesTermines.setText("Puzzles terminés : " + nb);
-
+        tvNbPuzzlesTermines.setText(String.valueOf(nb));
         if (nb == 0) return;
 
         // meilleur temps
         if (meilleurTemps != Integer.MAX_VALUE) {
-            tvMeilleurTemps.setText("Meilleur temps : " + formatTemps(meilleurTemps));
+            tvMeilleurScore.setText(String.valueOf(meilleurScore));
         }
 
         tvMeilleurScore.setText("Meilleur score : " + meilleurScore);
@@ -143,8 +142,8 @@ public class StatistiquesActivity extends AppCompatActivity {
         int tempsMoyen = totalTemps / nb;
         int scoreMoyen = totalScore / nb;
 
-        tvTempsMoyen.setText("Temps moyen : " + formatTemps(tempsMoyen));
-        tvScoreMoyen.setText("Score moyen : " + scoreMoyen);
+        tvTempsMoyen.setText(formatTemps(tempsMoyen));
+        tvScoreMoyen.setText(String.valueOf(scoreMoyen));
     }
 
     private String formatTemps(int secondesTotal) {

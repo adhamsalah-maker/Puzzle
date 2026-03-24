@@ -17,7 +17,7 @@
         <activity android:name=".view.JeuPuzzleActivity" />
         <activity android:name=".view.ListePuzzlesActivity" />
         <activity android:name=".view.CreationPuzzleActivity" />
-
+        <activity android:name=".view.StatistiquesActivity" />
         <activity
             android:name=".view.AccueilActivity"
             android:exported="true">
