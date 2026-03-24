@@ -32,14 +32,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nombre approximatif de pièces" />
+            android:text="Nombre de pièces" />
 
-        <EditText
-            android:id="@+id/etNbPieces"
+        <Spinner
+            android:id="@+id/spNbPieces"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ex : 12"
-            android:inputType="number"
             android:layout_marginBottom="16dp" />
 
         <TextView

@@ -32,7 +32,7 @@ import fr.ul.puzzle.utils.PuzzleGenerator;
 public class CreationPuzzleActivity extends AppCompatActivity {
 
     private EditText etNomPuzzle;
-    private EditText etNbPieces;
+    private Spinner spNbPieces;
     private Spinner spTypeDecoupage;
     private Button btnChoisirImage;
     private Button btnGenererPuzzle;
@@ -84,8 +84,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     private void initialiserVues() {
         etNomPuzzle = findViewById(R.id.etNomPuzzle);
-        etNbPieces = findViewById(R.id.etNbPieces);
-        spTypeDecoupage = findViewById(R.id.spTypeDecoupage);
+        spNbPieces = findViewById(R.id.spNbPieces);        spTypeDecoupage = findViewById(R.id.spTypeDecoupage);
         btnChoisirImage = findViewById(R.id.btnChoisirImage);
         btnPrendrePhoto = findViewById(R.id.btnPrendrePhoto);
         btnGenererPuzzle = findViewById(R.id.btnGenererPuzzle);
@@ -93,16 +92,23 @@ public class CreationPuzzleActivity extends AppCompatActivity {
     }
 
     private void initialiserSpinner() {
-        String[] typesDecoupage = {"DROIT", "POLYGONAL", "ARRONDI"};
+        String[] nombresPieces = {"16", "32", "64", "128"};
+        ArrayAdapter<String> adapterNbPieces = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                nombresPieces
+        );
+        adapterNbPieces.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spNbPieces.setAdapter(adapterNbPieces);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+        String[] typesDecoupage = {"DROIT", "POLYGONAL", "ARRONDI"};
+        ArrayAdapter<String> adapterType = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item,
                 typesDecoupage
         );
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spTypeDecoupage.setAdapter(adapter);
+        adapterType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spTypeDecoupage.setAdapter(adapterType);
     }
 
     private void initialiserListeners() {
@@ -121,8 +127,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     private void genererPuzzle() {
         String nomPuzzle = etNomPuzzle.getText().toString().trim();
-        String nbPiecesTexte = etNbPieces.getText().toString().trim();
-        String typeChoisi = spTypeDecoupage.getSelectedItem().toString();
+        String nbPiecesTexte = spNbPieces.getSelectedItem().toString();        String typeChoisi = spTypeDecoupage.getSelectedItem().toString();
 
         if (!typeChoisi.equals("DROIT")) {
             Toast.makeText(this, "Seul le découpage DROIT est implémenté pour le moment", Toast.LENGTH_SHORT).show();
@@ -134,10 +139,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
             return;
         }
 
-        if (nbPiecesTexte.isEmpty()) {
-            Toast.makeText(this, "Veuillez saisir un nombre de pièces", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
 
         if (imageSelectionneeUri == null) {
             Toast.makeText(this, "Veuillez choisir une image", Toast.LENGTH_SHORT).show();
