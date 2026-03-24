@@ -964,20 +964,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         imageView.setPadding(20, 20, 20, 20);
 
         new AlertDialog.Builder(this)
-                .setTitle("Puzzle terminé")
-                .setMessage("Bravo ! Vous avez réussi le puzzle.")
-                .setPositiveButton("OK", (dialog, which) -> {
-
-                    Intent intent = new Intent(JeuPuzzleActivity.this, AccueilActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-
-                    finish(); // ferme l'écran actuel
-
-                })
+                .setTitle("Aperçu du puzzle")
+                .setView(imageView)
+                .setPositiveButton("Fermer", null)
                 .show();
     }
-
 
     private void sauvegarderPartieDansFichier() {
         try {
