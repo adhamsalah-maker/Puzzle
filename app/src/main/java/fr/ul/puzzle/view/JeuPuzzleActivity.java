@@ -875,11 +875,20 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 dossierParties.mkdirs();
             }
 
+            // nom du puzzle = nom du dossier
+            File dossierPuzzle = new File(cheminDossierPuzzle);
+            String nomPuzzle = dossierPuzzle.getName();
+
+            // sécuriser le nom pour le fichier
+            String nomFichier = nomPuzzle.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            File fichierPartie = new File(dossierParties, "partie_" + nomFichier + ".txt");
+
             String dateTexte = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            File fichierPartie = new File(dossierParties, "partie_" + dateTexte + ".txt");
 
             StringBuilder contenu = new StringBuilder();
             contenu.append("cheminDossierPuzzle=").append(cheminDossierPuzzle).append("\n");
+            contenu.append("nomPuzzle=").append(nomPuzzle).append("\n");
             contenu.append("nbLignes=").append(nbLignes).append("\n");
             contenu.append("nbColonnes=").append(nbColonnes).append("\n");
             contenu.append("largeurImage=").append(largeurImage).append("\n");
@@ -888,18 +897,17 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             contenu.append("etat_cases=").append(etatCases).append("\n");
             contenu.append("date=").append(dateTexte).append("\n");
 
-            FileOutputStream fos = new FileOutputStream(fichierPartie);
+            FileOutputStream fos = new FileOutputStream(fichierPartie, false);
             fos.write(contenu.toString().getBytes());
             fos.flush();
             fos.close();
 
-            Toast.makeText(this, "Partie sauvegardée", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Partie sauvegardée / mise à jour", Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Erreur sauvegarde partie", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 }

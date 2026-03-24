@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -145,11 +146,29 @@ public class PartiesActivity extends AppCompatActivity {
                 ImageView imgPuzzle = vue.findViewById(R.id.imgPuzzle);
                 TextView tvNomPuzzle = vue.findViewById(R.id.tvNomPuzzle);
                 TextView tvNomFichier = vue.findViewById(R.id.tvNomFichier);
+                ImageButton btnSupprimerPartie = vue.findViewById(R.id.btnSupprimerPartie);
 
                 PartieSauvegardee partie = parties.get(position);
 
                 tvNomPuzzle.setText(partie.getNomPuzzle());
                 tvNomFichier.setText(partie.getNomFichier());
+
+                btnSupprimerPartie.setOnClickListener(v -> {
+                    new androidx.appcompat.app.AlertDialog.Builder(PartiesActivity.this)
+                            .setTitle("Supprimer")
+                            .setMessage("Voulez-vous supprimer cette partie ?")
+                            .setPositiveButton("Oui", (dialog, which) -> {
+                                File fichierASupprimer = fichiersParties.get(position);
+
+                                if (fichierASupprimer.exists()) {
+                                    fichierASupprimer.delete();
+                                }
+
+                                chargerListeParties();
+                            })
+                            .setNegativeButton("Non", null)
+                            .show();
+                });
 
                 if (!partie.getCheminImage().isEmpty()) {
                     Bitmap bitmap = BitmapFactory.decodeFile(partie.getCheminImage());
