@@ -336,10 +336,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         ImageView piecePlacee = pieceSelectionnee;
                         piecePlacee.setOnClickListener(v2 -> remettrePieceDansGrille(piecePlacee, caseVide, fondCase));
 
-                        if (estPieceBienPlacee(pieceSelectionnee, caseVide)) {
-                            caseVide.setBackgroundResource(R.drawable.case_puzzle_correct);
-                        } else {
-                            caseVide.setBackgroundResource(R.drawable.case_puzzle_faux);
+                        mettreAJourApparenceCase(caseVide, pieceSelectionnee);
+
+                        if (orientationIncompatible(pieceSelectionnee)) {
+                            Toast.makeText(
+                                    JeuPuzzleActivity.this,
+                                    "Alerte : orientation incompatible avec le placement",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
 
                         pieceSelectionnee.setAlpha(1.0f);
@@ -576,11 +580,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     remettrePieceDansGrille(pieceFinale, caseFinale, fondFinal)
             );
 
-            if (estPieceBienPlacee(pieceATrouver, caseTrouvee)) {
-                caseTrouvee.setBackgroundResource(R.drawable.case_puzzle_correct);
-            } else {
-                caseTrouvee.setBackgroundResource(R.drawable.case_puzzle_faux);
-            }
+            mettreAJourApparenceCase(caseTrouvee, pieceATrouver);
         }
 
         mettreAJourProgression();
@@ -738,10 +738,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     PositionCase positionCorrecte = (PositionCase) pieceDragged.getTag();
                     PositionCase positionCase = (PositionCase) targetCase.getTag(R.id.tag_position_case);
 
-                    if (estPieceBienPlacee(piecePlacee, targetCase)) {
-                        targetCase.setBackgroundResource(R.drawable.case_puzzle_correct);
-                    } else {
-                        targetCase.setBackgroundResource(R.drawable.case_puzzle_faux);
+                    mettreAJourApparenceCase(targetCase, piecePlacee);
+
+                    if (orientationIncompatible(piecePlacee)) {
+                        Toast.makeText(
+                                JeuPuzzleActivity.this,
+                                "Alerte : orientation incompatible avec le placement",
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
 
                     mettreAJourProgression();
@@ -1139,4 +1143,48 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             tempsEcouleAvantReprise = 0;
         }
     }
+
+    private boolean orientationIncompatible(ImageView piece) {
+        if (piece == null) {
+            return false;
+        }
+
+        Integer rotationCourante = (Integer) piece.getTag(R.id.tag_rotation_piece);
+        Integer rotationCible = (Integer) piece.getTag(R.id.tag_rotation_cible);
+
+        if (rotationCourante == null || rotationCible == null) {
+            return false;
+        }
+
+        // Pour des pièces rectangulaires :
+        // 0 et 180 gardent la même orientation générale
+        // 90 et 270 rendent l’orientation incompatible
+        return (rotationCourante % 180) != (rotationCible % 180);
+    }
+
+    private void mettreAJourApparenceCase(FrameLayout casePuzzle, ImageView piece) {
+        if (casePuzzle == null) {
+            return;
+        }
+
+        if (piece == null) {
+            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_vide);
+            return;
+        }
+
+        if (estPieceBienPlacee(piece, casePuzzle)) {
+            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_correct);
+        } else if (orientationIncompatible(piece)) {
+            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_faux);
+        } else {
+            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_vide);
+        }
+    }
+
+
+
+
+
+
+
 }
