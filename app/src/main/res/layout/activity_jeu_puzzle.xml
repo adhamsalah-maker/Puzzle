@@ -15,6 +15,16 @@
         android:textStyle="bold"
         android:layout_marginBottom="4dp" />
 
+    <TextView
+        android:id="@+id/tvChrono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+
     <LinearLayout
         android:id="@+id/layoutRotation"
         android:layout_width="match_parent"

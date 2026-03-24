@@ -64,6 +64,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private TextView tvZonePuzzle;
     private android.widget.LinearLayout layoutRotation;
     private ImageView imgPuzzleTermine;
+    private TextView tvChrono;
+    private long tempsDebut;
+    private android.os.Handler handler = new android.os.Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,8 +158,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         layoutRotation = findViewById(R.id.layoutRotation);
         imgPuzzleTermine = findViewById(R.id.imgPuzzleTermine);
 
-
-
+        tvChrono = findViewById(R.id.tvChrono);
+        demarrerChrono();
     }
 
     @Override
@@ -1008,6 +1011,26 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Erreur sauvegarde partie", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void demarrerChrono() {
+        tempsDebut = System.currentTimeMillis();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long tempsActuel = System.currentTimeMillis() - tempsDebut;
+
+                int secondes = (int) (tempsActuel / 1000);
+                int minutes = secondes / 60;
+                secondes = secondes % 60;
+
+                String temps = String.format("%02d:%02d", minutes, secondes);
+                tvChrono.setText(temps);
+
+                handler.postDelayed(this, 1000);
+            }
+        });
     }
 
 }
