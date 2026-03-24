@@ -69,7 +69,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private android.os.Handler handler = new android.os.Handler();
     private long tempsFinal = 0;
     private long tempsEcouleAvantReprise = 0;
-    private boolean partieSauvegardeeDansFichier = false;
+    private boolean partieModifieeDepuisDerniereSauvegarde = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +99,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 utiliserAide();
                 nbAidesRestantes--;
 
-                marquerPartieCommeNonSauvegardee();
-
+                marquerPartieCommeModifiee();
                 tvNbAides.setText(String.valueOf(nbAidesRestantes));
 
                 sauvegarderPartie();
@@ -115,7 +114,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         btnSauvegarder.setOnClickListener(v -> {
             sauvegarderPartie();
             sauvegarderPartieDansFichier();
-            partieSauvegardeeDansFichier = true;
+            partieModifieeDepuisDerniereSauvegarde = false;
         });
 
 
@@ -127,8 +126,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         modeTermine = getIntent().getBooleanExtra("modeTermine", false);
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
-        partieSauvegardeeDansFichier = modeReprise;
-        gridPieces.setColumnCount(nbColonnes);
+        partieModifieeDepuisDerniereSauvegarde = false;        gridPieces.setColumnCount(nbColonnes);
         gridPieces.setRowCount(nbLignes);
 
         gridZonePuzzle.setColumnCount(nbColonnes);
@@ -345,8 +343,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
 
-                        marquerPartieCommeNonSauvegardee();
-
+                        marquerPartieCommeModifiee();
                         ImageView piecePlacee = pieceSelectionnee;
                         piecePlacee.setOnClickListener(v2 -> remettrePieceDansGrille(piecePlacee, caseVide, fondCase));
 
@@ -764,8 +761,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show();
                     }
-                    marquerPartieCommeNonSauvegardee();
-                    mettreAJourProgression();
+                    marquerPartieCommeModifiee();                    mettreAJourProgression();
                     sauvegarderPartie();
                     verifierVictoire();
                     return true;
@@ -833,7 +829,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         caseVide.setTag(R.id.tag_piece_placee, null);
         caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
-        marquerPartieCommeNonSauvegardee();
+        marquerPartieCommeModifiee();
         mettreAJourProgression();
         sauvegarderPartie();
     }
@@ -872,8 +868,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         pieceSelectionnee.setRotation(nouvelleRotation);
         pieceSelectionnee.setTag(R.id.tag_rotation_piece, nouvelleRotation);
-        marquerPartieCommeNonSauvegardee();
-    }
+        marquerPartieCommeModifiee();    }
 
     private void utiliserAide() {
 
@@ -1239,9 +1234,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
-    private void marquerPartieCommeNonSauvegardee() {
+    private void marquerPartieCommeModifiee() {
         if (!modeTermine) {
-            partieSauvegardeeDansFichier = false;
+            partieModifieeDepuisDerniereSauvegarde = true;
         }
     }
 
@@ -1258,18 +1253,18 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             return;
         }
 
-        if (partieSauvegardeeDansFichier) {
+        if (!partieModifieeDepuisDerniereSauvegarde) {
             quitterVersAccueil();
             return;
         }
 
         new AlertDialog.Builder(this)
                 .setTitle("Partie non sauvegardée")
-                .setMessage("Cette partie n’a pas été sauvegardée. Voulez-vous la sauvegarder avant de quitter ?")
+                .setMessage("Cette partie n’a pas été sauvegardée.\nVoulez-vous la sauvegarder avant de quitter ?")
                 .setPositiveButton("Sauvegarder", (dialog, which) -> {
                     sauvegarderPartie();
                     sauvegarderPartieDansFichier();
-                    partieSauvegardeeDansFichier = true;
+                    partieModifieeDepuisDerniereSauvegarde = false;
                     quitterVersAccueil();
                 })
                 .setNegativeButton("Quitter", (dialog, which) -> {
@@ -1278,5 +1273,4 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 .setNeutralButton("Annuler", null)
                 .show();
     }
-
 }
