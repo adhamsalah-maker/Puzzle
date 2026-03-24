@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.widget.ProgressBar;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -170,6 +170,7 @@ public class PartiesActivity extends AppCompatActivity {
                 TextView tvNomPuzzle = vue.findViewById(R.id.tvNomPuzzle);
                 TextView tvDatePartie = vue.findViewById(R.id.tvDatePartie);
                 TextView tvProgressionPartie = vue.findViewById(R.id.tvProgressionPartie);
+                ProgressBar progressBarPartie = vue.findViewById(R.id.progressBarPartie);
                 ImageButton btnSupprimerPartie = vue.findViewById(R.id.btnSupprimerPartie);
 
                 PartieSauvegardee partie = parties.get(position);
@@ -205,6 +206,7 @@ public class PartiesActivity extends AppCompatActivity {
                 tvDatePartie.setText("Dernière sauvegarde : " + dateFormatee);
                 int progression = calculerProgression(donnees);
                 tvProgressionPartie.setText("Progression : " + progression + "%");
+                progressBarPartie.setProgress(progression);
 
                 btnSupprimerPartie.setOnClickListener(v -> {
                     new androidx.appcompat.app.AlertDialog.Builder(PartiesActivity.this)
@@ -231,6 +233,7 @@ public class PartiesActivity extends AppCompatActivity {
                 }
 
                 return vue;
+
             }
 
 

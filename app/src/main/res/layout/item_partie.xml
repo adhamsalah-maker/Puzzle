@@ -30,11 +30,28 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvNomFichier"
+            android:id="@+id/tvDatePartie"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="partie.txt"
+            android:text="Dernière sauvegarde : --"
             android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvProgressionPartie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Progression : 0%"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp"/>
+
+        <ProgressBar
+            android:id="@+id/progressBarPartie"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="4dp"
+            android:max="100"
+            android:progress="0"/>
     </LinearLayout>
 
     <ImageButton
