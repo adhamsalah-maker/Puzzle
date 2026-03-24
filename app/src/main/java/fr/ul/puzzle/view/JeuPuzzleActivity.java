@@ -15,7 +15,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.widget.LinearLayout;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +40,8 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+
 
 public class JeuPuzzleActivity extends AppCompatActivity {
 
@@ -70,6 +75,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private long tempsFinal = 0;
     private long tempsEcouleAvantReprise = 0;
     private boolean partieModifieeDepuisDerniereSauvegarde = false;
+    private List<String> historiqueActions = new ArrayList<>();
+    private int indexReplay = -1;
+    private boolean modeReplay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,6 +125,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             partieModifieeDepuisDerniereSauvegarde = false;
         });
 
+        Button btnPrecedent = findViewById(R.id.btnPrecedent);
+        Button btnSuivant = findViewById(R.id.btnSuivant);
+
+       // btnSuivant.setOnClickListener(v -> allerEtapeSuivante());
+       // btnPrecedent.setOnClickListener(v -> allerEtapePrecedente());
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
@@ -446,6 +459,13 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         supprimerSauvegardePartie();
 
         int scoreFinal = calculerScoreFinal();
+
+        modeReplay = true;
+        chargerHistorique();
+        indexReplay = -1;
+
+     //   LinearLayout layoutReplay = findViewById(R.id.layoutReplay);
+     //   layoutReplay.setVisibility(View.VISIBLE);
 
         new AlertDialog.Builder(this)
                 .setTitle("Puzzle terminé")
@@ -1387,7 +1407,31 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void chargerHistorique() {
+        try {
+            if (cheminDossierPuzzle == null) return;
 
+            File fichier = new File(cheminDossierPuzzle, "historique.txt");
+
+            if (!fichier.exists()) return;
+
+            BufferedReader reader = new BufferedReader(new FileReader(fichier));
+            String ligne;
+
+            historiqueActions.clear();
+
+            while ((ligne = reader.readLine()) != null) {
+                if (!ligne.trim().isEmpty()) {
+                    historiqueActions.add(ligne);
+                }
+            }
+
+            reader.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 

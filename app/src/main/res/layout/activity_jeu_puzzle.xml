@@ -137,6 +137,30 @@
         android:layout_weight="0.9"
         android:useDefaultMargins="false" />
 
+    <LinearLayout
+        android:id="@+id/layoutReplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/btnPrecedent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="←" />
+
+        <Button
+            android:id="@+id/btnSuivant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="→" />
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/imgPuzzleTermine"
         android:layout_width="match_parent"
