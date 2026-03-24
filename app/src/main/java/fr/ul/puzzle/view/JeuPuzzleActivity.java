@@ -137,8 +137,13 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         hauteurImage = getIntent().getIntExtra("hauteurImage", 1);
         modeReprise = getIntent().getBooleanExtra("modeReprise", false);
         modeTermine = getIntent().getBooleanExtra("modeTermine", false);
+        modeReplay = modeTermine;
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+        if (modeTermine) {
+            determinerGrilleDepuisDossier();
+        }
+
         initialiserHistoriqueSiNouvellePartie();
         partieModifieeDepuisDerniereSauvegarde = false;
         gridPieces.setColumnCount(nbColonnes);
@@ -338,6 +343,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 configurerDropPourCase(caseVide);
 
                 caseVide.setOnClickListener(v -> {
+                    if (modeReplay) {
+                        return;
+                    }
                     ImageView pieceDansLaCase = (ImageView) caseVide.getTag(R.id.tag_piece_placee);
 
                     if (pieceSelectionnee != null) {
@@ -656,39 +664,26 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         mettreAJourProgression();
     }
     private void chargerPuzzleTermine() {
-
         gridPieces.setVisibility(View.GONE);
-        gridZonePuzzle.setVisibility(View.GONE);
         layoutRotation.setVisibility(View.GONE);
+        btnAide.setVisibility(View.GONE);
+        btnSauvegarder.setVisibility(View.GONE);
         progressBarPuzzle.setVisibility(View.GONE);
         tvProgressionPourcentage.setVisibility(View.GONE);
-        tvTitreJeu.setVisibility(View.GONE);
 
-        tvZonePuzzle.setText("Puzzle terminé");
-        imgPuzzleTermine.setVisibility(View.VISIBLE);
+        tvZonePuzzle.setText("Replay du puzzle");
+        imgPuzzleTermine.setVisibility(View.GONE);
+        gridZonePuzzle.setVisibility(View.VISIBLE);
 
-        try {
-            if (cheminDossierPuzzle == null) {
-                return;
-            }
+        LinearLayout layoutReplay = findViewById(R.id.layoutReplay);
+        layoutReplay.setVisibility(View.VISIBLE);
 
-            File fichierImageOriginale = new File(cheminDossierPuzzle, "image_originale.png");
+        chargerHistorique();
+        indexReplay = -1;
 
-            if (!fichierImageOriginale.exists()) {
-                return;
-            }
-
-            Bitmap bitmap = BitmapFactory.decodeFile(fichierImageOriginale.getAbsolutePath());
-
-            if (bitmap != null) {
-                imgPuzzleTermine.setImageBitmap(bitmap);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        afficherZoneVide();
+        afficherPieces(cheminDossierPuzzle);
     }
-
     private void supprimerSauvegardePartie() {
         try {
             // 1. supprimer le fichier exact de la partie ouverte
@@ -737,6 +732,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     private void configurerDragPourPiece(ImageView pieceView) {
         pieceView.setOnLongClickListener(v -> {
+
+            if (modeReplay) {
+                return false;
+            }
             ClipData data = ClipData.newPlainText("", "");
 
             View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(v);
@@ -922,6 +921,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
 
     private void tournerPieceSelectionnee(int angleAAjouter) {
+        if (modeReplay) {
+            return;
+        }
+
         if (pieceSelectionnee == null) {
             return;
         }
@@ -1559,7 +1562,70 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void determinerGrilleDepuisDossier() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
 
+            File dossierPuzzle = new File(cheminDossierPuzzle);
+
+            File[] fichiersPieces = dossierPuzzle.listFiles((dir, name) ->
+                    name.startsWith("piece_") && name.endsWith(".png")
+            );
+
+            if (fichiersPieces == null) {
+                return;
+            }
+
+            int nbPieces = fichiersPieces.length;
+
+            File fichierImageOriginale = new File(dossierPuzzle, "image_originale.png");
+            Bitmap bitmap = BitmapFactory.decodeFile(fichierImageOriginale.getAbsolutePath());
+
+            boolean imagePaysage = true;
+            if (bitmap != null) {
+                imagePaysage = bitmap.getWidth() >= bitmap.getHeight();
+                largeurImage = bitmap.getWidth();
+                hauteurImage = bitmap.getHeight();
+            }
+
+            switch (nbPieces) {
+                case 16:
+                    nbLignes = 4;
+                    nbColonnes = 4;
+                    break;
+
+                case 32:
+                    if (imagePaysage) {
+                        nbLignes = 4;
+                        nbColonnes = 8;
+                    } else {
+                        nbLignes = 8;
+                        nbColonnes = 4;
+                    }
+                    break;
+
+                case 64:
+                    nbLignes = 8;
+                    nbColonnes = 8;
+                    break;
+
+                case 128:
+                    if (imagePaysage) {
+                        nbLignes = 8;
+                        nbColonnes = 16;
+                    } else {
+                        nbLignes = 16;
+                        nbColonnes = 8;
+                    }
+                    break;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
