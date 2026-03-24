@@ -894,6 +894,15 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         conteneurPiece.addView(piece);
         gridPieces.addView(conteneurPiece);
 
+
+        Integer indexPiece = (Integer) piece.getTag(R.id.tag_piece_index);
+
+        if (indexPiece != null) {
+            enregistrerActionHistorique(
+                    "RETIRER;piece=" + indexPiece
+            );
+        }
+
         caseVide.setTag(R.id.tag_piece_placee, null);
         caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
         marquerPartieCommeModifiee();
@@ -1501,6 +1510,10 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 placerPieceReplay(indexPiece, ligne, colonne, rotation, false);
             } else if ("AIDE".equals(typeAction)) {
                 placerPieceReplay(indexPiece, ligne, colonne, rotation, true);
+            } else if ("ROTATION".equals(typeAction)) {
+                appliquerRotationReplay(indexPiece, rotation);
+            } else if ("RETIRER".equals(typeAction)) {
+                retirerPieceReplay(indexPiece);
             }
 
         } catch (Exception e) {
@@ -1508,6 +1521,33 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void appliquerRotationReplay(int indexPiece, int rotation) {
+        for (ImageView piece : listePiecesCreees) {
+            Integer index = (Integer) piece.getTag(R.id.tag_piece_index);
+            if (index != null && index == indexPiece) {
+                piece.setRotation(rotation);
+                piece.setTag(R.id.tag_rotation_piece, rotation);
+                break;
+            }
+        }
+    }
+
+    private void retirerPieceReplay(int indexPiece) {
+        for (int i = 0; i < gridZonePuzzle.getChildCount(); i++) {
+            FrameLayout casePuzzle = (FrameLayout) gridZonePuzzle.getChildAt(i);
+            ImageView piece = (ImageView) casePuzzle.getTag(R.id.tag_piece_placee);
+
+            if (piece != null) {
+                Integer index = (Integer) piece.getTag(R.id.tag_piece_index);
+                if (index != null && index == indexPiece) {
+                    casePuzzle.removeView(piece);
+                    casePuzzle.setTag(R.id.tag_piece_placee, null);
+                    casePuzzle.setBackgroundResource(R.drawable.case_puzzle_vide);
+                    break;
+                }
+            }
+        }
+    }
     private void placerPieceReplay(int indexPiece, int ligne, int colonne, int rotation, boolean estAide) {
         ImageView pieceATrouver = null;
 
