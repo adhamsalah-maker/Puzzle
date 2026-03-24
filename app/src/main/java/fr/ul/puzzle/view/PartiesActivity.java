@@ -43,7 +43,8 @@ public class PartiesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parties);
-
+        View root = findViewById(R.id.rootParties);
+        root.setPadding(16, 120, 16, 16);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         listViewParties = findViewById(R.id.listViewParties);

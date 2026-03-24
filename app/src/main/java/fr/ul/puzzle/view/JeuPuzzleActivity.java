@@ -126,7 +126,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         modeTermine = getIntent().getBooleanExtra("modeTermine", false);
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
-        partieModifieeDepuisDerniereSauvegarde = false;        gridPieces.setColumnCount(nbColonnes);
+        initialiserHistoriqueSiNouvellePartie();
+        partieModifieeDepuisDerniereSauvegarde = false;
+        gridPieces.setColumnCount(nbColonnes);
         gridPieces.setRowCount(nbLignes);
 
         gridZonePuzzle.setColumnCount(nbColonnes);
@@ -342,6 +344,18 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
+
+                        Integer indexPiece = (Integer) pieceSelectionnee.getTag(R.id.tag_piece_index);
+                        Integer rotationPiece = (Integer) pieceSelectionnee.getTag(R.id.tag_rotation_piece);
+
+                        if (indexPiece != null && positionCase != null && rotationPiece != null) {
+                            enregistrerActionHistorique(
+                                    "PLACER;piece=" + indexPiece +
+                                            ";ligne=" + positionCase.getLigne() +
+                                            ";colonne=" + positionCase.getColonne() +
+                                            ";rotation=" + rotationPiece
+                            );
+                        }
 
                         marquerPartieCommeModifiee();
                         ImageView piecePlacee = pieceSelectionnee;
@@ -764,6 +778,20 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     targetCase.addView(pieceDragged);
                     targetCase.setTag(R.id.tag_piece_placee, pieceDragged);
 
+                    ImageView pieceImage = (ImageView) pieceDragged;
+                    Integer indexPiece = (Integer) pieceImage.getTag(R.id.tag_piece_index);
+                    PositionCase positionCase = (PositionCase) targetCase.getTag(R.id.tag_position_case);
+                    Integer rotationPiece = (Integer) pieceImage.getTag(R.id.tag_rotation_piece);
+
+                    if (indexPiece != null && positionCase != null && rotationPiece != null) {
+                        enregistrerActionHistorique(
+                                "PLACER;piece=" + indexPiece +
+                                        ";ligne=" + positionCase.getLigne() +
+                                        ";colonne=" + positionCase.getColonne() +
+                                        ";rotation=" + rotationPiece
+                        );
+                    }
+
                     ImageView piecePlacee = (ImageView) pieceDragged;
                     piecePlacee.setOnClickListener(v2 ->
                             remettrePieceDansGrille(piecePlacee, targetCase, fondCase)
@@ -771,7 +799,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                     // vérifier si la pièce est bien placée
                     PositionCase positionCorrecte = (PositionCase) pieceDragged.getTag();
-                    PositionCase positionCase = (PositionCase) targetCase.getTag(R.id.tag_position_case);
 
                     mettreAJourApparenceCase(targetCase, piecePlacee);
 
@@ -889,6 +916,16 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         pieceSelectionnee.setRotation(nouvelleRotation);
         pieceSelectionnee.setTag(R.id.tag_rotation_piece, nouvelleRotation);
+
+        Integer indexPiece = (Integer) pieceSelectionnee.getTag(R.id.tag_piece_index);
+
+        if (indexPiece != null) {
+            enregistrerActionHistorique(
+                    "ROTATION;piece=" + indexPiece +
+                            ";rotation=" + nouvelleRotation
+            );
+        }
+
         marquerPartieCommeModifiee();    }
 
     private void utiliserAide() {
@@ -934,6 +971,18 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
                             casePuzzle.addView(piece);
                             casePuzzle.setTag(R.id.tag_piece_placee, piece);
+
+                            Integer indexPiece = (Integer) piece.getTag(R.id.tag_piece_index);
+                            Integer rotationPiece = (Integer) piece.getTag(R.id.tag_rotation_piece);
+
+                            if (indexPiece != null && positionCase != null && rotationPiece != null) {
+                                enregistrerActionHistorique(
+                                        "AIDE;piece=" + indexPiece +
+                                                ";ligne=" + positionCase.getLigne() +
+                                                ";colonne=" + positionCase.getColonne() +
+                                                ";rotation=" + rotationPiece
+                                );
+                            }
 
                             animerPieceAidee(piece);
 
@@ -1302,4 +1351,54 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 .clear()
                 .apply();
     }
+
+    private void enregistrerActionHistorique(String action) {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            File fichierHistorique = new File(cheminDossierPuzzle, "historique.txt");
+            java.io.FileWriter writer = new java.io.FileWriter(fichierHistorique, true);
+            writer.write(action + "\n");
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initialiserHistoriqueSiNouvellePartie() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            if (!modeReprise && !modeTermine) {
+                File fichierHistorique = new File(cheminDossierPuzzle, "historique.txt");
+                if (fichierHistorique.exists()) {
+                    fichierHistorique.delete();
+                }
+                fichierHistorique.createNewFile();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
