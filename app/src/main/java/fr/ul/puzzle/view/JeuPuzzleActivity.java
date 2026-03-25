@@ -356,10 +356,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
                 );
+                imageParams.gravity = Gravity.CENTER;
 
                 imageView.setLayoutParams(imageParams);
-                imageView.setAdjustViewBounds(false);
-                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                imageView.setAdjustViewBounds(true);
+                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
                 conteneurPiece.addView(imageView);
                 gridPieces.addView(conteneurPiece);
@@ -418,13 +419,15 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         }
 
                         retirerPieceDeSonParent(pieceSelectionnee);
-
                         FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
                                 FrameLayout.LayoutParams.MATCH_PARENT,
                                 FrameLayout.LayoutParams.MATCH_PARENT
                         );
+                        pieceParams.gravity = Gravity.CENTER;
+
                         pieceSelectionnee.setLayoutParams(pieceParams);
-                        pieceSelectionnee.setScaleType(ImageView.ScaleType.FIT_XY);
+                        pieceSelectionnee.setAdjustViewBounds(true);
+                        pieceSelectionnee.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
@@ -703,8 +706,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
             );
+            pieceParams.gravity = Gravity.CENTER;
+
             pieceATrouver.setLayoutParams(pieceParams);
-            pieceATrouver.setScaleType(ImageView.ScaleType.FIT_XY);
+            pieceATrouver.setAdjustViewBounds(true);
+            pieceATrouver.setScaleType(ImageView.ScaleType.FIT_CENTER);
             pieceATrouver.setRotation(rotationPiece);
             pieceATrouver.setTag(R.id.tag_rotation_piece, rotationPiece);
 
@@ -866,10 +872,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                             FrameLayout.LayoutParams.MATCH_PARENT,
                             FrameLayout.LayoutParams.MATCH_PARENT
                     );
+                    pieceParams.gravity = Gravity.CENTER;
                     pieceDragged.setLayoutParams(pieceParams);
 
                     if (pieceDragged instanceof ImageView) {
-                        ((ImageView) pieceDragged).setScaleType(ImageView.ScaleType.FIT_XY);
+                        ((ImageView) pieceDragged).setAdjustViewBounds(true);
+                        ((ImageView) pieceDragged).setScaleType(ImageView.ScaleType.FIT_CENTER);
                     }
 
                     // ajouter la nouvelle pièce dans la case
@@ -949,11 +957,12 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
+        imageParams.gravity = Gravity.CENTER;
 
         piece.setLayoutParams(imageParams);
         piece.setImageDrawable(piece.getDrawable());
-        piece.setAdjustViewBounds(false);
-        piece.setScaleType(ImageView.ScaleType.FIT_XY);
+        piece.setAdjustViewBounds(true);
+        piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
         piece.setVisibility(View.VISIBLE);
         piece.setAlpha(1.0f);
 
@@ -1610,8 +1619,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void reconstruireReplayDepuisDebut() {
-        afficherZoneVide();
-        afficherPieces(cheminDossierPuzzle);
 
         for (int i = 0; i <= indexReplay; i++) {
             appliquerActionReplay(historiqueActions.get(i));
@@ -1726,8 +1733,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
+        pieceParams.gravity = Gravity.CENTER;
+
         pieceATrouver.setLayoutParams(pieceParams);
-        pieceATrouver.setScaleType(ImageView.ScaleType.FIT_XY);
+        pieceATrouver.setAdjustViewBounds(true);
+        pieceATrouver.setScaleType(ImageView.ScaleType.FIT_CENTER);
         pieceATrouver.setRotation(rotation);
         pieceATrouver.setTag(R.id.tag_rotation_piece, rotation);
 

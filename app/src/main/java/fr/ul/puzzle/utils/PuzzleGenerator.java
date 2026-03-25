@@ -1,17 +1,15 @@
 package fr.ul.puzzle.utils;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.ul.puzzle.cutting.ArrondiCutter;
+import fr.ul.puzzle.cutting.DroitCutter;
+import fr.ul.puzzle.cutting.PolygonalCutter;
 import fr.ul.puzzle.model.Piece;
 import fr.ul.puzzle.model.TypeDecoupage;
 
@@ -33,6 +31,10 @@ public class PuzzleGenerator {
 
         int idPiece = 1;
 
+        DroitCutter droitCutter = new DroitCutter();
+        PolygonalCutter polygonalCutter = new PolygonalCutter();
+        ArrondiCutter arrondiCutter = new ArrondiCutter();
+
         for (int ligne = 0; ligne < nbLignes; ligne++) {
             for (int colonne = 0; colonne < nbColonnes; colonne++) {
 
@@ -50,28 +52,26 @@ public class PuzzleGenerator {
                     hauteurReelle = hauteurImage - y;
                 }
 
-                Bitmap morceauRectangulaire = Bitmap.createBitmap(
-                        imageSource,
-                        x,
-                        y,
-                        largeurReelle,
-                        hauteurReelle
-                );
-
                 Bitmap morceauFinal;
 
                 switch (typeDecoupage) {
                     case POLYGONAL:
-                        morceauFinal = creerPiecePolygonale(morceauRectangulaire);
+                        morceauFinal = polygonalCutter.decouperPiece(
+                                imageSource, x, y, largeurReelle, hauteurReelle
+                        );
                         break;
 
                     case ARRONDI:
-                        morceauFinal = creerPieceArrondie(morceauRectangulaire);
+                        morceauFinal = arrondiCutter.decouperPiece(
+                                imageSource, x, y, largeurReelle, hauteurReelle
+                        );
                         break;
 
                     case DROIT:
                     default:
-                        morceauFinal = morceauRectangulaire;
+                        morceauFinal = droitCutter.decouperPiece(
+                                imageSource, x, y, largeurReelle, hauteurReelle
+                        );
                         break;
                 }
 
@@ -94,60 +94,6 @@ public class PuzzleGenerator {
         }
 
         return pieces;
-    }
-
-    private static Bitmap creerPiecePolygonale(Bitmap source) {
-        int largeur = source.getWidth();
-        int hauteur = source.getHeight();
-
-        Bitmap resultat = Bitmap.createBitmap(largeur, hauteur, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(resultat);
-
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Path path = new Path();
-
-        float dx = largeur * 0.22f;
-        float dy = hauteur * 0.18f;
-
-        // Forme polygonale bien visible
-        path.moveTo(dx, 0);                        // haut-gauche intérieur
-        path.lineTo(largeur - dx, 0);             // haut-droite intérieur
-        path.lineTo(largeur, dy);                 // pointe droite haute
-        path.lineTo(largeur - dx * 0.6f, hauteur / 2f); // milieu droit
-        path.lineTo(largeur, hauteur - dy);       // pointe droite basse
-        path.lineTo(largeur - dx, hauteur);       // bas-droite intérieur
-        path.lineTo(dx, hauteur);                 // bas-gauche intérieur
-        path.lineTo(0, hauteur - dy);             // pointe gauche basse
-        path.lineTo(dx * 0.6f, hauteur / 2f);     // milieu gauche
-        path.lineTo(0, dy);                       // pointe gauche haute
-        path.close();
-
-        canvas.drawPath(path, paint);
-
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(source, 0, 0, paint);
-
-        return resultat;
-    }
-    private static Bitmap creerPieceArrondie(Bitmap source) {
-        int largeur = source.getWidth();
-        int hauteur = source.getHeight();
-
-        Bitmap resultat = Bitmap.createBitmap(largeur, hauteur, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(resultat);
-
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Path path = new Path();
-
-        float rayon = Math.min(largeur, hauteur) * 0.18f;
-        path.addRoundRect(0, 0, largeur, hauteur, rayon, rayon, Path.Direction.CW);
-
-        canvas.drawPath(path, paint);
-
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(source, 0, 0, paint);
-
-        return resultat;
     }
 
     private static void sauvegarderBitmap(Bitmap bitmap, File fichier) throws Exception {
