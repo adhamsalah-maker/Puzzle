@@ -130,6 +130,29 @@
         android:textStyle="bold"
         android:layout_marginBottom="4dp" />
 
+
+
+    <TextView
+        android:id="@+id/tvActionReplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Action : --"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#444444"
+        android:visibility="gone"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/tvEtapeReplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Étape : 0 / 0"
+        android:textSize="12sp"
+        android:textColor="#444444"
+        android:visibility="gone"
+        android:layout_marginBottom="4dp" />
+
     <GridLayout
         android:id="@+id/gridZonePuzzle"
         android:layout_width="match_parent"

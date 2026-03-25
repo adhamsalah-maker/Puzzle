@@ -665,24 +665,40 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
     private void chargerPuzzleTermine() {
         gridPieces.setVisibility(View.GONE);
+        tvTitreJeu.setVisibility(View.GONE);
         layoutRotation.setVisibility(View.GONE);
         btnAide.setVisibility(View.GONE);
         btnSauvegarder.setVisibility(View.GONE);
         progressBarPuzzle.setVisibility(View.GONE);
         tvProgressionPourcentage.setVisibility(View.GONE);
+        imgPuzzleTermine.setVisibility(View.GONE);
 
         tvZonePuzzle.setText("Replay du puzzle");
-        imgPuzzleTermine.setVisibility(View.GONE);
         gridZonePuzzle.setVisibility(View.VISIBLE);
 
         LinearLayout layoutReplay = findViewById(R.id.layoutReplay);
         layoutReplay.setVisibility(View.VISIBLE);
 
+        //LinearLayout layoutLegendReplay = findViewById(R.id.layoutLegendReplay);
+        //layoutLegendReplay.setVisibility(View.VISIBLE);
+
         chargerHistorique();
         indexReplay = -1;
-
+        chargerPiecesPourReplay();
         afficherZoneVide();
-        afficherPieces(cheminDossierPuzzle);
+        TextView tvActionReplay = findViewById(R.id.tvActionReplay);
+        tvActionReplay.setVisibility(View.VISIBLE);
+        tvActionReplay.setText("Action : début du replay");
+        TextView tvEtapeReplay = findViewById(R.id.tvEtapeReplay);
+        tvEtapeReplay.setVisibility(View.VISIBLE);
+        tvEtapeReplay.setText("Étape : 0 / " + historiqueActions.size());
+    }
+
+    private void mettreAJourEtapeReplay() {
+        TextView tvEtapeReplay = findViewById(R.id.tvEtapeReplay);
+        if (tvEtapeReplay != null) {
+            tvEtapeReplay.setText("Étape : " + (indexReplay + 1) + " / " + historiqueActions.size());
+        }
     }
     private void supprimerSauvegardePartie() {
         try {
@@ -1445,6 +1461,61 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void chargerPiecesPourReplay() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
+
+            File dossierPuzzle = new File(cheminDossierPuzzle);
+
+            if (!dossierPuzzle.exists() || !dossierPuzzle.isDirectory()) {
+                return;
+            }
+
+            File[] fichiersPieces = dossierPuzzle.listFiles((dir, name) ->
+                    name.startsWith("piece_") && name.endsWith(".png")
+            );
+
+            if (fichiersPieces == null || fichiersPieces.length == 0) {
+                return;
+            }
+
+            List<File> listePieces = new ArrayList<>(Arrays.asList(fichiersPieces));
+            listePiecesCreees.clear();
+
+            for (File fichierPiece : listePieces) {
+                Bitmap bitmap = BitmapFactory.decodeFile(fichierPiece.getAbsolutePath());
+
+                if (bitmap != null) {
+                    ImageView imageView = new ImageView(this);
+                    imageView.setImageBitmap(bitmap);
+                    imageView.setAdjustViewBounds(false);
+                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+
+                    String nomFichier = fichierPiece.getName();
+                    String numero = nomFichier.replace("piece_", "").replace(".png", "");
+                    int indexPiece = Integer.parseInt(numero) - 1;
+
+                    int ligneCorrecte = indexPiece / nbColonnes;
+                    int colonneCorrecte = indexPiece % nbColonnes;
+
+                    PositionCase positionCorrecte = new PositionCase(ligneCorrecte, colonneCorrecte);
+                    imageView.setTag(positionCorrecte);
+                    imageView.setTag(R.id.tag_piece_index, indexPiece);
+                    imageView.setTag(R.id.tag_rotation_cible, 0);
+                    imageView.setTag(R.id.tag_rotation_piece, 0);
+                    imageView.setRotation(0);
+
+                    listePiecesCreees.add(imageView);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void allerEtapeSuivante() {
         if (historiqueActions == null || historiqueActions.isEmpty()) {
             return;
@@ -1456,6 +1527,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         indexReplay++;
         appliquerActionReplay(historiqueActions.get(indexReplay));
+        mettreAJourEtapeReplay();
     }
 
     private void allerEtapePrecedente() {
@@ -1469,6 +1541,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         indexReplay--;
         reconstruireReplayDepuisDebut();
+        mettreAJourEtapeReplay();
     }
 
     private void reconstruireReplayDepuisDebut() {
@@ -1506,6 +1579,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 }
             }
 
+            afficherTexteActionReplay(typeAction);
+
             if ("PLACER".equals(typeAction)) {
                 placerPieceReplay(indexPiece, ligne, colonne, rotation, false);
             } else if ("AIDE".equals(typeAction)) {
@@ -1520,7 +1595,6 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
     private void appliquerRotationReplay(int indexPiece, int rotation) {
         for (ImageView piece : listePiecesCreees) {
             Integer index = (Integer) piece.getTag(R.id.tag_piece_index);
@@ -1667,7 +1741,31 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void afficherTexteActionReplay(String typeAction) {
+        TextView tvActionReplay = findViewById(R.id.tvActionReplay);
 
+        if (tvActionReplay == null) {
+            return;
+        }
+
+        switch (typeAction) {
+            case "PLACER":
+                tvActionReplay.setText("Action : placement normal");
+                break;
+            case "AIDE":
+                tvActionReplay.setText("Action : aide utilisée");
+                break;
+            case "ROTATION":
+                tvActionReplay.setText("Action : rotation");
+                break;
+            case "RETIRER":
+                tvActionReplay.setText("Action : retrait d'une pièce");
+                break;
+            default:
+                tvActionReplay.setText("Action : --");
+                break;
+        }
+    }
 
 
 
