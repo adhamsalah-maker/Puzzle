@@ -177,6 +177,20 @@
             android:text="←" />
 
         <Button
+            android:id="@+id/btnPlayReplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="▶" />
+
+        <Button
+            android:id="@+id/btnPauseReplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="⏸" />
+
+        <Button
             android:id="@+id/btnSuivant"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

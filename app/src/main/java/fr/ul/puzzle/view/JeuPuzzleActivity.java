@@ -78,6 +78,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private List<String> historiqueActions = new ArrayList<>();
     private int indexReplay = -1;
     private boolean modeReplay = false;
+    private boolean replayEnCours = false;
+    private final android.os.Handler replayHandler = new android.os.Handler();
+    private Runnable replayRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,9 +130,24 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         Button btnPrecedent = findViewById(R.id.btnPrecedent);
         Button btnSuivant = findViewById(R.id.btnSuivant);
+        Button btnPlayReplay = findViewById(R.id.btnPlayReplay);
+        Button btnPauseReplay = findViewById(R.id.btnPauseReplay);
 
        btnSuivant.setOnClickListener(v -> allerEtapeSuivante());
        btnPrecedent.setOnClickListener(v -> allerEtapePrecedente());
+
+        btnSuivant.setOnClickListener(v -> {
+            pauseReplayAutomatique();
+            allerEtapeSuivante();
+        });
+
+        btnPrecedent.setOnClickListener(v -> {
+            pauseReplayAutomatique();
+            allerEtapePrecedente();
+        });
+
+        btnPlayReplay.setOnClickListener(v -> lancerReplayAutomatique());
+        btnPauseReplay.setOnClickListener(v -> pauseReplayAutomatique());
 
         nbLignes = getIntent().getIntExtra("nbLignes", 1);
         nbColonnes = getIntent().getIntExtra("nbColonnes", 2);
@@ -200,6 +218,51 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 demanderConfirmationAvantQuitter();
             }
         });
+    }
+
+    private void lancerReplayAutomatique() {
+        if (historiqueActions == null || historiqueActions.isEmpty()) {
+            return;
+        }
+
+        if (replayEnCours) {
+            return;
+        }
+
+        replayEnCours = true;
+
+        replayRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!replayEnCours) {
+                    return;
+                }
+
+                if (indexReplay + 1 < historiqueActions.size()) {
+                    indexReplay++;
+                    appliquerActionReplay(historiqueActions.get(indexReplay));
+                    mettreAJourEtapeReplay();
+                    replayHandler.postDelayed(this, 1000);
+                } else {
+                    replayEnCours = false;
+                }
+            }
+        };
+
+        replayHandler.post(replayRunnable);
+    }
+    private void pauseReplayAutomatique() {
+        replayEnCours = false;
+
+        if (replayRunnable != null) {
+            replayHandler.removeCallbacks(replayRunnable);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        pauseReplayAutomatique();
+        super.onDestroy();
     }
 
     @Override
@@ -1517,6 +1580,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void allerEtapeSuivante() {
+        replayEnCours = false;
         if (historiqueActions == null || historiqueActions.isEmpty()) {
             return;
         }
@@ -1531,6 +1595,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void allerEtapePrecedente() {
+        replayEnCours = false;
         if (historiqueActions == null || historiqueActions.isEmpty()) {
             return;
         }
