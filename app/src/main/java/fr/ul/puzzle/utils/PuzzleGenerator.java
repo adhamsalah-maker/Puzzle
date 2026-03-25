@@ -29,6 +29,22 @@ public class PuzzleGenerator {
         int largeurPiece = largeurImage / nbColonnes;
         int hauteurPiece = hauteurImage / nbLignes;
 
+        int[][] bordsVerticaux = new int[nbLignes][Math.max(0, nbColonnes - 1)];
+        int[][] bordsHorizontaux = new int[Math.max(0, nbLignes - 1)][nbColonnes];
+
+// Génération cohérente des bords partagés
+        for (int ligne = 0; ligne < nbLignes; ligne++) {
+            for (int colonne = 0; colonne < nbColonnes - 1; colonne++) {
+                bordsVerticaux[ligne][colonne] = ((ligne + colonne) % 2 == 0) ? 1 : -1;
+            }
+        }
+
+        for (int ligne = 0; ligne < nbLignes - 1; ligne++) {
+            for (int colonne = 0; colonne < nbColonnes; colonne++) {
+                bordsHorizontaux[ligne][colonne] = ((ligne + colonne) % 2 == 0) ? -1 : 1;
+            }
+        }
+
         int idPiece = 1;
 
         DroitCutter droitCutter = new DroitCutter();
@@ -56,8 +72,21 @@ public class PuzzleGenerator {
 
                 switch (typeDecoupage) {
                     case POLYGONAL:
+                        int top = (ligne == 0) ? 0 : -bordsHorizontaux[ligne - 1][colonne];
+                        int right = (colonne == nbColonnes - 1) ? 0 : bordsVerticaux[ligne][colonne];
+                        int bottom = (ligne == nbLignes - 1) ? 0 : bordsHorizontaux[ligne][colonne];
+                        int left = (colonne == 0) ? 0 : -bordsVerticaux[ligne][colonne - 1];
+
                         morceauFinal = polygonalCutter.decouperPiece(
-                                imageSource, x, y, largeurReelle, hauteurReelle
+                                imageSource,
+                                x,
+                                y,
+                                largeurReelle,
+                                hauteurReelle,
+                                top,
+                                right,
+                                bottom,
+                                left
                         );
                         break;
 

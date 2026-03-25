@@ -40,7 +40,10 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 
 
 public class JeuPuzzleActivity extends AppCompatActivity {
@@ -81,6 +84,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private boolean replayEnCours = false;
     private final android.os.Handler replayHandler = new android.os.Handler();
     private Runnable replayRunnable;
+    private String typeDecoupage = "DROIT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +162,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         modeReplay = modeTermine;
         cheminDossierPuzzle = getIntent().getStringExtra("dossierPuzzle");
         cheminFichierPartie = getIntent().getStringExtra("cheminFichierPartie");
+        chargerTypeDecoupage();
+        Toast.makeText(this, "Type : " + typeDecoupage, Toast.LENGTH_SHORT).show();
         if (modeTermine) {
             determinerGrilleDepuisDossier();
         }
@@ -339,19 +345,19 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 int largeurDisponible = gridPieces.getWidth();
                 int hauteurDisponible = gridPieces.getHeight();
 
-                int largeurCase = largeurDisponible / nbColonnes;
-                int hauteurCase = hauteurDisponible / nbLignes;
+                int largeurCase = (largeurDisponible / nbColonnes) - 2;
+                int hauteurCase = (hauteurDisponible / nbLignes) - 2;
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = largeurCase;
                 params.height = hauteurCase;
-                params.setMargins(2, 2, 2, 2);
+                params.setMargins(0, 0, 0, 0);
 
                 FrameLayout conteneurPiece = new FrameLayout(this);
                 conteneurPiece.setLayoutParams(params);
                 conteneurPiece.setClipChildren(true);
                 conteneurPiece.setClipToPadding(true);
-                conteneurPiece.setPadding(2, 2, 2, 2);
+                conteneurPiece.setPadding(0, 0, 0, 0);
                 FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT
@@ -374,8 +380,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         int largeurDisponible = gridZonePuzzle.getWidth();
         int hauteurDisponible = gridZonePuzzle.getHeight();
 
-        int largeurCase = largeurDisponible / nbColonnes;
-        int hauteurCase = hauteurDisponible / nbLignes;
+        int largeurCase = (largeurDisponible / nbColonnes) - 2;
+        int hauteurCase = (hauteurDisponible / nbLignes) - 2;
 
         for (int ligne = 0; ligne < nbLignes; ligne++) {
             for (int colonne = 0; colonne < nbColonnes; colonne++) {
@@ -383,13 +389,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = largeurCase;
                 params.height = hauteurCase;
-                params.setMargins(2, 2, 2, 2);
+
+                if ("POLYGONAL".equals(typeDecoupage)) {
+                    params.setMargins(0, 0, 0, 0);
+                } else {
+                    params.setMargins(0, 0, 0, 0);
+                }
 
                 FrameLayout caseVide = new FrameLayout(this);
                 caseVide.setLayoutParams(params);
-                caseVide.setPadding(dpVersPx(4), dpVersPx(4), dpVersPx(4), dpVersPx(4));
-                caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
 
+                if ("POLYGONAL".equals(typeDecoupage)) {
+                    caseVide.setPadding(0, 0, 0, 0);
+                } else {
+                    caseVide.setPadding(dpVersPx(4), dpVersPx(4), dpVersPx(4), dpVersPx(4));
+                }
+                appliquerFondCaseSelonType(caseVide);
                 PositionCase positionCase = new PositionCase(ligne, colonne);
                 caseVide.setTag(R.id.tag_position_case, positionCase);
                 caseVide.setTag(R.id.tag_piece_placee, null);
@@ -401,6 +416,11 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 ));
                 fondCase.setScaleType(ImageView.ScaleType.FIT_XY);
                 fondCase.setBackgroundColor(0x00FFFFFF);
+
+                if ("POLYGONAL".equals(typeDecoupage)) {
+                    Bitmap fondPolygonal = creerFondCasePolygonale(largeurCase, hauteurCase, ligne, colonne);
+                    fondCase.setImageBitmap(fondPolygonal);
+                }
 
                 caseVide.addView(fondCase);
 
@@ -419,16 +439,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         }
 
                         retirerPieceDeSonParent(pieceSelectionnee);
-                        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                                FrameLayout.LayoutParams.MATCH_PARENT,
-                                FrameLayout.LayoutParams.MATCH_PARENT
-                        );
-                        pieceParams.gravity = Gravity.CENTER;
-
-                        pieceSelectionnee.setLayoutParams(pieceParams);
-                        pieceSelectionnee.setAdjustViewBounds(true);
-                        pieceSelectionnee.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
+                        appliquerAffichagePieceDansCase(pieceSelectionnee, caseVide);
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
 
@@ -701,16 +712,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
 
             retirerPieceDeSonParent(pieceATrouver);
-
-            FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT
-            );
-            pieceParams.gravity = Gravity.CENTER;
-
-            pieceATrouver.setLayoutParams(pieceParams);
-            pieceATrouver.setAdjustViewBounds(true);
-            pieceATrouver.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            appliquerAffichagePieceDansCase(pieceATrouver, caseTrouvee);
             pieceATrouver.setRotation(rotationPiece);
             pieceATrouver.setTag(R.id.tag_rotation_piece, rotationPiece);
 
@@ -868,16 +870,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         remettrePieceDansGrille(anciennePiece, targetCase, fondCase);
                     }
 
-                    FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.MATCH_PARENT
-                    );
-                    pieceParams.gravity = Gravity.CENTER;
-                    pieceDragged.setLayoutParams(pieceParams);
-
                     if (pieceDragged instanceof ImageView) {
-                        ((ImageView) pieceDragged).setAdjustViewBounds(true);
-                        ((ImageView) pieceDragged).setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        appliquerAffichagePieceDansCase((ImageView) pieceDragged, targetCase);
                     }
 
                     // ajouter la nouvelle pièce dans la case
@@ -939,19 +933,19 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         int largeurDisponible = gridPieces.getWidth();
         int hauteurDisponible = gridPieces.getHeight();
 
-        int largeurCase = largeurDisponible / nbColonnes;
-        int hauteurCase = hauteurDisponible / nbLignes;
+        int largeurCase = (largeurDisponible / nbColonnes) - 2;
+        int hauteurCase = (hauteurDisponible / nbLignes) - 2;
 
         GridLayout.LayoutParams paramsPiece = new GridLayout.LayoutParams();
         paramsPiece.width = largeurCase;
         paramsPiece.height = hauteurCase;
-        paramsPiece.setMargins(2, 2, 2, 2);
+        paramsPiece.setMargins(0, 0, 0, 0);
 
         FrameLayout conteneurPiece = new FrameLayout(this);
         conteneurPiece.setLayoutParams(paramsPiece);
         conteneurPiece.setClipChildren(true);
         conteneurPiece.setClipToPadding(true);
-        conteneurPiece.setPadding(2, 2, 2, 2);
+        conteneurPiece.setPadding(0, 0, 0, 0);
 
         FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -992,7 +986,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
 
         caseVide.setTag(R.id.tag_piece_placee, null);
-        caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
+        appliquerFondCaseSelonType(caseVide);
         marquerPartieCommeModifiee();
         mettreAJourProgression();
         sauvegarderPartie();
@@ -1080,14 +1074,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                             piece.setRotation(0);
                             piece.setTag(R.id.tag_rotation_piece, 0);
 
-                            // Ajouter dans la case
-                            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                    FrameLayout.LayoutParams.MATCH_PARENT,
-                                    FrameLayout.LayoutParams.MATCH_PARENT
-                            );
-
-                            piece.setLayoutParams(params);
-                            piece.setScaleType(ImageView.ScaleType.FIT_XY);
+// Ajouter dans la case
+                            appliquerAffichagePieceDansCase(piece, casePuzzle);
 
                             casePuzzle.addView(piece);
                             casePuzzle.setTag(R.id.tag_piece_placee, piece);
@@ -1362,7 +1350,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
 
         if (piece == null) {
-            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_vide);
+            appliquerFondCaseSelonType(casePuzzle);
             return;
         }
 
@@ -1371,7 +1359,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         } else if (orientationIncompatible(piece)) {
             casePuzzle.setBackgroundResource(R.drawable.case_puzzle_faux);
         } else {
-            casePuzzle.setBackgroundResource(R.drawable.case_puzzle_vide);
+            appliquerFondCaseSelonType(casePuzzle);
         }
     }
 
@@ -1729,15 +1717,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
         retirerPieceDeSonParent(pieceATrouver);
 
-        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-        );
-        pieceParams.gravity = Gravity.CENTER;
-
-        pieceATrouver.setLayoutParams(pieceParams);
-        pieceATrouver.setAdjustViewBounds(true);
-        pieceATrouver.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        appliquerAffichagePieceDansCase(pieceATrouver, caseTrouvee);
         pieceATrouver.setRotation(rotation);
         pieceATrouver.setTag(R.id.tag_rotation_piece, rotation);
 
@@ -1842,7 +1822,226 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
+    private void chargerTypeDecoupage() {
+        try {
+            if (cheminDossierPuzzle == null) {
+                return;
+            }
 
+            File fichierType = new File(cheminDossierPuzzle, "type_decoupage.txt");
 
+            if (!fichierType.exists()) {
+                typeDecoupage = "DROIT";
+                return;
+            }
 
+            BufferedReader reader = new BufferedReader(new FileReader(fichierType));
+            String ligne = reader.readLine();
+            reader.close();
+
+            if (ligne != null && !ligne.trim().isEmpty()) {
+                typeDecoupage = ligne.trim();
+            } else {
+                typeDecoupage = "DROIT";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            typeDecoupage = "DROIT";
+        }
+    }
+
+    private void appliquerFondCaseSelonType(FrameLayout caseVide) {
+        if (caseVide == null) {
+            return;
+        }
+
+        switch (typeDecoupage) {
+            case "POLYGONAL":
+                caseVide.setBackgroundColor(Color.TRANSPARENT);
+                break;
+
+            case "ARRONDI":
+                caseVide.setBackgroundResource(R.drawable.case_puzzle_arrondi);
+                break;
+
+            case "DROIT":
+            default:
+                caseVide.setBackgroundResource(R.drawable.case_puzzle_vide);
+                break;
+        }
+    }
+    private Bitmap creerFondCasePolygonale(int largeur, int hauteur, int ligne, int colonne) {
+        Bitmap bitmap = Bitmap.createBitmap(largeur, hauteur, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        Path path = construireCheminPolygonalFond(largeur, hauteur, ligne, colonne);
+
+        Paint paintFond = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintFond.setStyle(Paint.Style.FILL);
+        paintFond.setColor(Color.parseColor("#F7F7F7"));
+
+        canvas.drawPath(path, paintFond);
+
+        // 👇 contour seulement partiel
+        Paint paintContour = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintContour.setStyle(Paint.Style.STROKE);
+        paintContour.setStrokeWidth(1f);
+        paintContour.setColor(Color.parseColor("#999999"));
+
+        dessinerContourVisible(canvas, largeur, hauteur, ligne, colonne, paintContour);
+
+        return bitmap;
+    }
+
+    private void dessinerContourVisible(Canvas canvas, int largeur, int hauteur, int ligne, int colonne, Paint paint) {
+
+        float w = largeur;
+        float h = hauteur;
+
+        boolean bordGauche = (colonne == 0);
+        boolean bordDroit = (colonne == nbColonnes - 1);
+        boolean bordHaut = (ligne == 0);
+        boolean bordBas = (ligne == nbLignes - 1);
+
+        // HAUT
+        if (bordHaut) {
+            canvas.drawLine(0, 0, w, 0, paint);
+        }
+
+        // BAS
+        if (bordBas) {
+            canvas.drawLine(0, h, w, h, paint);
+        }
+
+        // GAUCHE
+        if (bordGauche) {
+            canvas.drawLine(0, 0, 0, h, paint);
+        }
+
+        // DROITE
+        if (bordDroit) {
+            canvas.drawLine(w, 0, w, h, paint);
+        }
+    }
+
+    private Path construireCheminPolygonalFond(int largeur, int hauteur, int ligne, int colonne) {
+        Path path = new Path();
+
+        float gauche = 0f;
+        float haut = 0f;
+        float droite = largeur;
+        float bas = hauteur;
+
+        float encocheX = (droite - gauche) * 0.18f;
+        float encocheY = (bas - haut) * 0.18f;
+
+        float milieuX = (gauche + droite) / 2f;
+        float milieuY = (haut + bas) / 2f;
+
+        boolean bordGaucheExterieur = (colonne == 0);
+        boolean bordDroitExterieur = (colonne == nbColonnes - 1);
+        boolean bordHautExterieur = (ligne == 0);
+        boolean bordBasExterieur = (ligne == nbLignes - 1);
+
+        boolean bosseDroite = (colonne % 2 == 0);
+        boolean bosseGauche = !bosseDroite;
+        boolean bosseBas = (ligne % 2 == 0);
+        boolean bosseHaut = !bosseBas;
+
+        path.moveTo(gauche, haut);
+
+        // HAUT
+        if (bordHautExterieur) {
+            path.lineTo(droite, haut);
+        } else {
+            if (bosseHaut) {
+                path.lineTo(milieuX - encocheX, haut);
+                path.lineTo(milieuX, haut - encocheY);
+                path.lineTo(milieuX + encocheX, haut);
+                path.lineTo(droite, haut);
+            } else {
+                path.lineTo(milieuX - encocheX, haut);
+                path.lineTo(milieuX, haut + encocheY);
+                path.lineTo(milieuX + encocheX, haut);
+                path.lineTo(droite, haut);
+            }
+        }
+
+        // DROITE
+        if (bordDroitExterieur) {
+            path.lineTo(droite, bas);
+        } else {
+            if (bosseDroite) {
+                path.lineTo(droite, milieuY - encocheY);
+                path.lineTo(droite + encocheX, milieuY);
+                path.lineTo(droite, milieuY + encocheY);
+                path.lineTo(droite, bas);
+            } else {
+                path.lineTo(droite, milieuY - encocheY);
+                path.lineTo(droite - encocheX, milieuY);
+                path.lineTo(droite, milieuY + encocheY);
+                path.lineTo(droite, bas);
+            }
+        }
+
+        // BAS
+        if (bordBasExterieur) {
+            path.lineTo(gauche, bas);
+        } else {
+            if (bosseBas) {
+                path.lineTo(milieuX + encocheX, bas);
+                path.lineTo(milieuX, bas + encocheY);
+                path.lineTo(milieuX - encocheX, bas);
+                path.lineTo(gauche, bas);
+            } else {
+                path.lineTo(milieuX + encocheX, bas);
+                path.lineTo(milieuX, bas - encocheY);
+                path.lineTo(milieuX - encocheX, bas);
+                path.lineTo(gauche, bas);
+            }
+        }
+
+        // GAUCHE
+        if (bordGaucheExterieur) {
+            path.lineTo(gauche, haut);
+        } else {
+            if (bosseGauche) {
+                path.lineTo(gauche, milieuY + encocheY);
+                path.lineTo(gauche - encocheX, milieuY);
+                path.lineTo(gauche, milieuY - encocheY);
+                path.lineTo(gauche, haut);
+            } else {
+                path.lineTo(gauche, milieuY + encocheY);
+                path.lineTo(gauche + encocheX, milieuY);
+                path.lineTo(gauche, milieuY - encocheY);
+                path.lineTo(gauche, haut);
+            }
+        }
+
+        path.close();
+        return path;
+    }
+
+    private void appliquerAffichagePieceDansCase(ImageView piece, FrameLayout caseVide) {
+        if (piece == null || caseVide == null) {
+            return;
+        }
+
+        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                caseVide.getWidth(),
+                caseVide.getHeight()
+        );
+        pieceParams.gravity = Gravity.CENTER;
+
+        piece.setLayoutParams(pieceParams);
+
+        if ("POLYGONAL".equals(typeDecoupage)) {
+            piece.setAdjustViewBounds(false);
+            piece.setScaleType(ImageView.ScaleType.FIT_XY);
+        } else {
+            piece.setAdjustViewBounds(true);
+            piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        }
+    }
 }

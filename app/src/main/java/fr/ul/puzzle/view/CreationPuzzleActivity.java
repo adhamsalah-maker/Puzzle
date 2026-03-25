@@ -28,7 +28,7 @@ import fr.ul.puzzle.model.TypeDecoupage;
 import fr.ul.puzzle.utils.FileUtils;
 import fr.ul.puzzle.utils.GridUtils;
 import fr.ul.puzzle.utils.PuzzleGenerator;
-
+import fr.ul.puzzle.view.JeuPuzzlePolygonalActivity;
 public class CreationPuzzleActivity extends AppCompatActivity {
 
     private EditText etNomPuzzle;
@@ -165,12 +165,14 @@ public class CreationPuzzleActivity extends AppCompatActivity {
                 return;
             }
 
+            TypeDecoupage typeDecoupage = TypeDecoupage.valueOf(typeChoisi);
+
             File dossierPuzzle = FileUtils.creerDossierPuzzle(dossierBase, nomPuzzle);
+
+            sauvegarderTypeDecoupage(dossierPuzzle, typeDecoupage);
 
             File fichierImageOriginale = new File(dossierPuzzle, "image_originale.png");
             sauvegarderBitmap(bitmapOriginal, fichierImageOriginale);
-
-            TypeDecoupage typeDecoupage = TypeDecoupage.valueOf(typeChoisi);
 
             Puzzle puzzle = new Puzzle(
                     1,
@@ -201,12 +203,14 @@ public class CreationPuzzleActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG
             ).show();
 
+
             Intent intent = new Intent(CreationPuzzleActivity.this, JeuPuzzleActivity.class);
             intent.putExtra("dossierPuzzle", dossierPuzzle.getAbsolutePath());
             intent.putExtra("nbLignes", nbLignes);
             intent.putExtra("nbColonnes", nbColonnes);
             intent.putExtra("largeurImage", largeurImage);
             intent.putExtra("hauteurImage", hauteurImage);
+
             getSharedPreferences("puzzle_save", MODE_PRIVATE).edit().clear().apply();
             startActivity(intent);
 
@@ -267,5 +271,14 @@ public class CreationPuzzleActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    private void sauvegarderTypeDecoupage(File dossierPuzzle, TypeDecoupage typeDecoupage) throws Exception {
+        File fichierType = new File(dossierPuzzle, "type_decoupage.txt");
+
+        FileOutputStream outputStream = new FileOutputStream(fichierType);
+        outputStream.write(typeDecoupage.name().getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }
