@@ -153,7 +153,9 @@ public class StatistiquesActivity extends AppCompatActivity {
 
         // meilleur temps
         if (meilleurTemps != Integer.MAX_VALUE) {
-            tvMeilleurScore.setText(String.valueOf(meilleurScore));
+            tvMeilleurTemps.setText(formatTemps(meilleurTemps));
+        } else {
+            tvMeilleurTemps.setText("--:--");
         }
 
         tvMeilleurScore.setText("Meilleur score : " + meilleurScore);
