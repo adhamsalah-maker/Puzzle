@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.ul.puzzle.R;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class ListePuzzlesActivity extends AppCompatActivity {
 
@@ -25,6 +27,7 @@ public class ListePuzzlesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.appliquerTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_liste_puzzles);
 
@@ -41,6 +44,22 @@ public class ListePuzzlesActivity extends AppCompatActivity {
             v.setPadding(0, insets.getSystemWindowInsetTop(), 0, 0);
             return insets;
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_theme, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_theme) {
+            ThemeUtils.basculerTheme(this);
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
