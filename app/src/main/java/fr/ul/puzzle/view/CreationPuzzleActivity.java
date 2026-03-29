@@ -28,7 +28,7 @@ import fr.ul.puzzle.model.TypeDecoupage;
 import fr.ul.puzzle.utils.FileUtils;
 import fr.ul.puzzle.utils.GridUtils;
 import fr.ul.puzzle.utils.PuzzleGenerator;
-import fr.ul.puzzle.view.JeuPuzzlePolygonalActivity;
+
 public class CreationPuzzleActivity extends AppCompatActivity {
 
     private EditText etNomPuzzle;

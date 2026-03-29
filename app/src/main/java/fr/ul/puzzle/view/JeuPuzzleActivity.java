@@ -179,8 +179,13 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridPieces.setClipChildren(true);
         gridPieces.setClipToPadding(true);
 
-        gridZonePuzzle.setClipChildren(true);
-        gridZonePuzzle.setClipToPadding(true);
+        if ("POLYGONAL".equals(typeDecoupage)) {
+            gridZonePuzzle.setClipChildren(false);
+            gridZonePuzzle.setClipToPadding(false);
+        } else {
+            gridZonePuzzle.setClipChildren(true);
+            gridZonePuzzle.setClipToPadding(true);
+        }
         progressBarPuzzle.setMax(100);
         progressBarPuzzle.setProgress(0);
         tvProgressionPourcentage.setText("0%");
@@ -277,6 +282,21 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         return true;
     }
 
+    private Bitmap chargerBitmapGuideCase(int ligne, int colonne) {
+        if (cheminDossierPuzzle == null) {
+            return null;
+        }
+
+        int numeroPiece = (ligne * nbColonnes) + colonne + 1;
+        File fichierPiece = new File(cheminDossierPuzzle, "piece_" + numeroPiece + ".png");
+
+        if (!fichierPiece.exists()) {
+            return null;
+        }
+
+        return BitmapFactory.decodeFile(fichierPiece.getAbsolutePath());
+    }
+
     private void afficherPieces(String cheminDossierPuzzle) {
         File dossierPuzzle = new File(cheminDossierPuzzle);
 
@@ -342,11 +362,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     pieceSelectionnee.setAlpha(0.5f);
                 });
 
-                int largeurDisponible = gridPieces.getWidth();
-                int hauteurDisponible = gridPieces.getHeight();
+                int nbPiecesRestantes = listePieces.size();
+                int nbLignesAffichage = (int) Math.ceil((double) nbPiecesRestantes / nbColonnes);
 
-                int largeurCase = (largeurDisponible / nbColonnes) - 2;
-                int hauteurCase = (hauteurDisponible / nbLignes) - 2;
+                int largeurDisponible = gridPieces.getWidth();
+                int largeurCase = (largeurDisponible / nbColonnes) - dpVersPx(6);
+                int hauteurCase = largeurCase;
+
+                gridPieces.setRowCount(nbLignesAffichage);
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = largeurCase;
@@ -378,48 +401,62 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         gridZonePuzzle.removeAllViews();
 
         int largeurDisponible = gridZonePuzzle.getWidth();
-        int hauteurDisponible = gridZonePuzzle.getHeight();
-
-        int largeurCase = (largeurDisponible / nbColonnes) - 2;
-        int hauteurCase = (hauteurDisponible / nbLignes) - 2;
+        int tailleCase = largeurDisponible / nbColonnes;
+        int chevauchement = "POLYGONAL".equals(typeDecoupage) ? (int) (tailleCase * 0.18f) : 0;
 
         for (int ligne = 0; ligne < nbLignes; ligne++) {
             for (int colonne = 0; colonne < nbColonnes; colonne++) {
 
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = largeurCase;
-                params.height = hauteurCase;
+                params.width = tailleCase;
+                params.height = tailleCase;
+                params.rowSpec = GridLayout.spec(ligne);
+                params.columnSpec = GridLayout.spec(colonne);
 
-                if ("POLYGONAL".equals(typeDecoupage)) {
-                    params.setMargins(0, 0, 0, 0);
-                } else {
-                    params.setMargins(0, 0, 0, 0);
-                }
+                params.setMargins(0, 0, 0, 0);
 
                 FrameLayout caseVide = new FrameLayout(this);
                 caseVide.setLayoutParams(params);
+                caseVide.setPadding(0, 0, 0, 0);
 
                 if ("POLYGONAL".equals(typeDecoupage)) {
-                    caseVide.setPadding(0, 0, 0, 0);
-                } else {
-                    caseVide.setPadding(dpVersPx(4), dpVersPx(4), dpVersPx(4), dpVersPx(4));
+                    caseVide.setClipChildren(false);
+                    caseVide.setClipToPadding(false);
                 }
+
                 appliquerFondCaseSelonType(caseVide);
+
                 PositionCase positionCase = new PositionCase(ligne, colonne);
                 caseVide.setTag(R.id.tag_position_case, positionCase);
                 caseVide.setTag(R.id.tag_piece_placee, null);
 
                 ImageView fondCase = new ImageView(this);
-                fondCase.setLayoutParams(new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                ));
+
+                FrameLayout.LayoutParams fondParams;
+                if ("POLYGONAL".equals(typeDecoupage)) {
+                    fondParams = new FrameLayout.LayoutParams(
+                            tailleCase + (chevauchement * 2),
+                            tailleCase + (chevauchement * 2)
+                    );
+                    fondParams.gravity = Gravity.CENTER;
+                } else {
+                    fondParams = new FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT
+                    );
+                }
+
+                fondCase.setLayoutParams(fondParams);
                 fondCase.setScaleType(ImageView.ScaleType.FIT_XY);
-                fondCase.setBackgroundColor(0x00FFFFFF);
+                fondCase.setBackgroundColor(Color.TRANSPARENT);
 
                 if ("POLYGONAL".equals(typeDecoupage)) {
-                    Bitmap fondPolygonal = creerFondCasePolygonale(largeurCase, hauteurCase, ligne, colonne);
-                    fondCase.setImageBitmap(fondPolygonal);
+                    Bitmap bitmapGuide = chargerBitmapGuideCase(ligne, colonne);
+                    fondCase.setImageBitmap(bitmapGuide);
+                    fondCase.setAlpha(0.22f);
+                } else {
+                    fondCase.setImageDrawable(null);
+                    fondCase.setAlpha(1f);
                 }
 
                 caseVide.addView(fondCase);
@@ -430,6 +467,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     if (modeReplay) {
                         return;
                     }
+
                     ImageView pieceDansLaCase = (ImageView) caseVide.getTag(R.id.tag_piece_placee);
 
                     if (pieceSelectionnee != null) {
@@ -486,7 +524,9 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             }
         }
     }
-        private int dpVersPx(int dp) {
+
+
+    private int dpVersPx(int dp) {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 dp,
@@ -930,11 +970,14 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     private void remettrePieceDansGrille(ImageView piece, FrameLayout caseVide, ImageView fondCase) {
         caseVide.removeView(piece);
 
-        int largeurDisponible = gridPieces.getWidth();
-        int hauteurDisponible = gridPieces.getHeight();
+        int nbPiecesDansGrille = gridPieces.getChildCount() + 1;
+        int nbLignesAffichage = (int) Math.ceil((double) nbPiecesDansGrille / nbColonnes);
 
-        int largeurCase = (largeurDisponible / nbColonnes) - 2;
-        int hauteurCase = (hauteurDisponible / nbLignes) - 2;
+        int largeurDisponible = gridPieces.getWidth();
+        int largeurCase = (largeurDisponible / nbColonnes) - dpVersPx(6);
+        int hauteurCase = largeurCase;
+
+        gridPieces.setRowCount(nbLignesAffichage);
 
         GridLayout.LayoutParams paramsPiece = new GridLayout.LayoutParams();
         paramsPiece.width = largeurCase;
@@ -1871,25 +1914,47 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 break;
         }
     }
+
     private Bitmap creerFondCasePolygonale(int largeur, int hauteur, int ligne, int colonne) {
+        int top = 0;
+        int right = 0;
+        int bottom = 0;
+        int left = 0;
+
+        if (ligne > 0) {
+            int bordHaut = (((ligne - 1) + colonne) % 2 == 0) ? -1 : 1;
+            top = -bordHaut;
+        }
+
+        if (colonne < nbColonnes - 1) {
+            right = ((ligne + colonne) % 2 == 0) ? 1 : -1;
+        }
+
+        if (ligne < nbLignes - 1) {
+            bottom = ((ligne + colonne) % 2 == 0) ? -1 : 1;
+        }
+
+        if (colonne > 0) {
+            int bordGauche = ((ligne + (colonne - 1)) % 2 == 0) ? 1 : -1;
+            left = -bordGauche;
+        }
+
         Bitmap bitmap = Bitmap.createBitmap(largeur, hauteur, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
-        Path path = construireCheminPolygonalFond(largeur, hauteur, ligne, colonne);
+        Path path = construireCheminPolygonalFond(largeur, hauteur, top, right, bottom, left);
 
         Paint paintFond = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintFond.setStyle(Paint.Style.FILL);
-        paintFond.setColor(Color.parseColor("#F7F7F7"));
+        paintFond.setColor(Color.parseColor("#F3F3F3"));
 
-        canvas.drawPath(path, paintFond);
-
-        // 👇 contour seulement partiel
         Paint paintContour = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintContour.setStyle(Paint.Style.STROKE);
-        paintContour.setStrokeWidth(1f);
-        paintContour.setColor(Color.parseColor("#999999"));
+        paintContour.setStrokeWidth(2f);
+        paintContour.setColor(Color.parseColor("#BDBDBD"));
 
-        dessinerContourVisible(canvas, largeur, hauteur, ligne, colonne, paintContour);
+        canvas.drawPath(path, paintFond);
+        canvas.drawPath(path, paintContour);
 
         return bitmap;
     }
@@ -1925,7 +1990,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
     }
 
-    private Path construireCheminPolygonalFond(int largeur, int hauteur, int ligne, int colonne) {
+    private Path construireCheminPolygonalFond(int largeur, int hauteur,
+                                               int top, int right, int bottom, int left) {
         Path path = new Path();
 
         float gauche = 0f;
@@ -1933,118 +1999,167 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         float droite = largeur;
         float bas = hauteur;
 
-        float encocheX = (droite - gauche) * 0.18f;
-        float encocheY = (bas - haut) * 0.18f;
+        float encocheX = largeur * 0.18f;
+        float encocheY = hauteur * 0.18f;
 
         float milieuX = (gauche + droite) / 2f;
         float milieuY = (haut + bas) / 2f;
 
-        boolean bordGaucheExterieur = (colonne == 0);
-        boolean bordDroitExterieur = (colonne == nbColonnes - 1);
-        boolean bordHautExterieur = (ligne == 0);
-        boolean bordBasExterieur = (ligne == nbLignes - 1);
-
-        boolean bosseDroite = (colonne % 2 == 0);
-        boolean bosseGauche = !bosseDroite;
-        boolean bosseBas = (ligne % 2 == 0);
-        boolean bosseHaut = !bosseBas;
-
         path.moveTo(gauche, haut);
 
-        // HAUT
-        if (bordHautExterieur) {
-            path.lineTo(droite, haut);
-        } else {
-            if (bosseHaut) {
-                path.lineTo(milieuX - encocheX, haut);
-                path.lineTo(milieuX, haut - encocheY);
-                path.lineTo(milieuX + encocheX, haut);
-                path.lineTo(droite, haut);
-            } else {
-                path.lineTo(milieuX - encocheX, haut);
-                path.lineTo(milieuX, haut + encocheY);
-                path.lineTo(milieuX + encocheX, haut);
-                path.lineTo(droite, haut);
-            }
-        }
-
-        // DROITE
-        if (bordDroitExterieur) {
-            path.lineTo(droite, bas);
-        } else {
-            if (bosseDroite) {
-                path.lineTo(droite, milieuY - encocheY);
-                path.lineTo(droite + encocheX, milieuY);
-                path.lineTo(droite, milieuY + encocheY);
-                path.lineTo(droite, bas);
-            } else {
-                path.lineTo(droite, milieuY - encocheY);
-                path.lineTo(droite - encocheX, milieuY);
-                path.lineTo(droite, milieuY + encocheY);
-                path.lineTo(droite, bas);
-            }
-        }
-
-        // BAS
-        if (bordBasExterieur) {
-            path.lineTo(gauche, bas);
-        } else {
-            if (bosseBas) {
-                path.lineTo(milieuX + encocheX, bas);
-                path.lineTo(milieuX, bas + encocheY);
-                path.lineTo(milieuX - encocheX, bas);
-                path.lineTo(gauche, bas);
-            } else {
-                path.lineTo(milieuX + encocheX, bas);
-                path.lineTo(milieuX, bas - encocheY);
-                path.lineTo(milieuX - encocheX, bas);
-                path.lineTo(gauche, bas);
-            }
-        }
-
-        // GAUCHE
-        if (bordGaucheExterieur) {
-            path.lineTo(gauche, haut);
-        } else {
-            if (bosseGauche) {
-                path.lineTo(gauche, milieuY + encocheY);
-                path.lineTo(gauche - encocheX, milieuY);
-                path.lineTo(gauche, milieuY - encocheY);
-                path.lineTo(gauche, haut);
-            } else {
-                path.lineTo(gauche, milieuY + encocheY);
-                path.lineTo(gauche + encocheX, milieuY);
-                path.lineTo(gauche, milieuY - encocheY);
-                path.lineTo(gauche, haut);
-            }
-        }
+        ajouterCoteHorizontalFond(path, gauche, droite, haut, milieuX, encocheX, encocheY, top, true);
+        ajouterCoteVerticalFond(path, haut, bas, droite, milieuY, encocheX, encocheY, right, true);
+        ajouterCoteHorizontalInverseFond(path, droite, gauche, bas, milieuX, encocheX, encocheY, bottom);
+        ajouterCoteVerticalInverseFond(path, bas, haut, gauche, milieuY, encocheX, encocheY, left);
 
         path.close();
         return path;
     }
+
+    private void ajouterCoteHorizontalFond(Path path,
+                                           float gauche,
+                                           float droite,
+                                           float y,
+                                           float milieuX,
+                                           float encocheX,
+                                           float encocheY,
+                                           int type,
+                                           boolean haut) {
+
+        if (type == 0) {
+            path.lineTo(droite, y);
+            return;
+        }
+
+        path.lineTo(milieuX - encocheX, y);
+
+        if (type == 1) {
+            path.lineTo(milieuX, haut ? y - encocheY : y + encocheY);
+        } else {
+            path.lineTo(milieuX, haut ? y + encocheY : y - encocheY);
+        }
+
+        path.lineTo(milieuX + encocheX, y);
+        path.lineTo(droite, y);
+    }
+
+    private void ajouterCoteHorizontalInverseFond(Path path,
+                                                  float droite,
+                                                  float gauche,
+                                                  float y,
+                                                  float milieuX,
+                                                  float encocheX,
+                                                  float encocheY,
+                                                  int type) {
+
+        if (type == 0) {
+            path.lineTo(gauche, y);
+            return;
+        }
+
+        path.lineTo(milieuX + encocheX, y);
+
+        if (type == 1) {
+            path.lineTo(milieuX, y + encocheY);
+        } else {
+            path.lineTo(milieuX, y - encocheY);
+        }
+
+        path.lineTo(milieuX - encocheX, y);
+        path.lineTo(gauche, y);
+    }
+
+    private void ajouterCoteVerticalFond(Path path,
+                                         float haut,
+                                         float bas,
+                                         float x,
+                                         float milieuY,
+                                         float encocheX,
+                                         float encocheY,
+                                         int type,
+                                         boolean droite) {
+
+        if (type == 0) {
+            path.lineTo(x, bas);
+            return;
+        }
+
+        path.lineTo(x, milieuY - encocheY);
+
+        if (type == 1) {
+            path.lineTo(droite ? x + encocheX : x - encocheX, milieuY);
+        } else {
+            path.lineTo(droite ? x - encocheX : x + encocheX, milieuY);
+        }
+
+        path.lineTo(x, milieuY + encocheY);
+        path.lineTo(x, bas);
+    }
+
+    private void ajouterCoteVerticalInverseFond(Path path,
+                                                float bas,
+                                                float haut,
+                                                float x,
+                                                float milieuY,
+                                                float encocheX,
+                                                float encocheY,
+                                                int type) {
+
+        if (type == 0) {
+            path.lineTo(x, haut);
+            return;
+        }
+
+        path.lineTo(x, milieuY + encocheY);
+
+        if (type == 1) {
+            path.lineTo(x - encocheX, milieuY);
+        } else {
+            path.lineTo(x + encocheX, milieuY);
+        }
+
+        path.lineTo(x, milieuY - encocheY);
+        path.lineTo(x, haut);
+    }
+
 
     private void appliquerAffichagePieceDansCase(ImageView piece, FrameLayout caseVide) {
         if (piece == null || caseVide == null) {
             return;
         }
 
-        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-        );
-        pieceParams.gravity = Gravity.CENTER;
+        int base = caseVide.getLayoutParams().width;
 
-        piece.setLayoutParams(pieceParams);
+        if (base <= 0) {
+            base = caseVide.getWidth();
+        }
+
+        int debord = "POLYGONAL".equals(typeDecoupage) ? (int) (base * 0.18f) : 0;
+
+        FrameLayout.LayoutParams pieceParams;
 
         if ("POLYGONAL".equals(typeDecoupage)) {
+            pieceParams = new FrameLayout.LayoutParams(
+                    base + (debord * 2),
+                    base + (debord * 2)
+            );
+            pieceParams.gravity = Gravity.CENTER;
             piece.setAdjustViewBounds(false);
             piece.setScaleType(ImageView.ScaleType.FIT_XY);
         } else {
+            pieceParams = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+            );
+            pieceParams.gravity = Gravity.CENTER;
             piece.setAdjustViewBounds(true);
             piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
 
+        piece.setLayoutParams(pieceParams);
         piece.setVisibility(View.VISIBLE);
         piece.bringToFront();
     }
+
+
 }
