@@ -28,6 +28,8 @@ import fr.ul.puzzle.model.TypeDecoupage;
 import fr.ul.puzzle.utils.FileUtils;
 import fr.ul.puzzle.utils.GridUtils;
 import fr.ul.puzzle.utils.PuzzleGenerator;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class CreationPuzzleActivity extends AppCompatActivity {
 
@@ -73,6 +75,7 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.appliquerTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_creation_puzzle);
 
@@ -80,6 +83,21 @@ public class CreationPuzzleActivity extends AppCompatActivity {
         initialiserSpinner();
         initialiserListeners();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_theme, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_theme) {
+            ThemeUtils.basculerTheme(this);
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void initialiserVues() {
