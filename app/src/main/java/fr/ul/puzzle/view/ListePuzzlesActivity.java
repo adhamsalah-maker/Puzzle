@@ -54,11 +54,24 @@ public class ListePuzzlesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Mes puzzles",
+                    "Cet écran affiche les puzzles terminés.\n\n" +
+                            "- Touchez un puzzle pour l'ouvrir en mode terminé.\n" +
+                            "- Le temps réalisé peut être affiché.\n" +
+                            "- Vous pouvez supprimer un puzzle si nécessaire."
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

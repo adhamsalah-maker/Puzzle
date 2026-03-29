@@ -62,11 +62,24 @@ public class PartiesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Mes parties",
+                    "Cet écran affiche les parties sauvegardées.\n\n" +
+                            "- Touchez une partie pour la reprendre.\n" +
+                            "- La progression est conservée.\n" +
+                            "- Vous pouvez supprimer une sauvegarde si vous n'en avez plus besoin."
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

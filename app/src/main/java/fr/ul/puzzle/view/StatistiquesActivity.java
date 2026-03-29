@@ -42,11 +42,26 @@ public class StatistiquesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Statistiques",
+                    "Cet écran affiche vos statistiques globales.\n\n" +
+                            "- Nombre de puzzles terminés\n" +
+                            "- Meilleur temps\n" +
+                            "- Meilleur score\n" +
+                            "- Temps moyen\n" +
+                            "- Score moyen"
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
