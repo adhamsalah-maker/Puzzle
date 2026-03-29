@@ -57,11 +57,26 @@ public class AccueilActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Accueil",
+                    "Bienvenue dans l'application Puzzle.\n\n" +
+                            "- CRÉER UN PUZZLE : créer un nouveau puzzle à partir d'une image.\n" +
+                            "- MES PUZZLES : voir les puzzles terminés.\n" +
+                            "- MES PARTIES : reprendre une partie sauvegardée.\n" +
+                            "- STATISTIQUES : consulter vos résultats.\n\n" +
+                            "Utilisez aussi l'icône thème en haut pour changer entre mode clair et sombre."
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

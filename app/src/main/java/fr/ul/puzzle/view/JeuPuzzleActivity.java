@@ -241,11 +241,28 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Jeu",
+                    "Dans cet écran, vous pouvez résoudre le puzzle.\n\n" +
+                            "- Sélectionnez une pièce mélangée.\n" +
+                            "- Placez-la dans la zone de reconstruction.\n" +
+                            "- Utilisez GAUCHE et DROITE pour la rotation.\n" +
+                            "- Utilisez l'œil pour voir l'image complète.\n" +
+                            "- Utilisez la disquette pour sauvegarder.\n" +
+                            "- Utilisez l'ampoule pour obtenir une aide.\n\n" +
+                            "Le but est de replacer toutes les pièces correctement."
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

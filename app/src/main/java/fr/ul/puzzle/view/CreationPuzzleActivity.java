@@ -92,11 +92,27 @@ public class CreationPuzzleActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            AideUtils.afficherAide(
+                    this,
+                    "Aide - Création",
+                    "Dans cet écran, vous pouvez créer un puzzle.\n\n" +
+                            "Étapes :\n" +
+                            "1. Choisir une image depuis la galerie ou l'appareil photo.\n" +
+                            "2. Donner un nom au puzzle.\n" +
+                            "3. Choisir le nombre de pièces.\n" +
+                            "4. Choisir le type de découpage : droit, arrondi ou polygonal.\n" +
+                            "5. Valider pour générer le puzzle."
+            );
+            return true;
+        }
+
         if (item.getItemId() == R.id.action_theme) {
             ThemeUtils.basculerTheme(this);
             recreate();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
