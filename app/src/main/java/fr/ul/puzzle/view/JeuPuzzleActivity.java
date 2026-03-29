@@ -2029,8 +2029,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         }
 
         FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                caseVide.getWidth(),
-                caseVide.getHeight()
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
         );
         pieceParams.gravity = Gravity.CENTER;
 
@@ -2043,5 +2043,8 @@ public class JeuPuzzleActivity extends AppCompatActivity {
             piece.setAdjustViewBounds(true);
             piece.setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
+
+        piece.setVisibility(View.VISIBLE);
+        piece.bringToFront();
     }
 }
