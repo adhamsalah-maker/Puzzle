@@ -10,7 +10,8 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -88,6 +89,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.appliquerTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jeu_puzzle);
 
@@ -229,6 +231,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                 demanderConfirmationAvantQuitter();
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_theme, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_theme) {
+            ThemeUtils.basculerTheme(this);
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void lancerReplayAutomatique() {
