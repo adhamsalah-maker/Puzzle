@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
+import android.media.MediaPlayer;
 import fr.ul.puzzle.R;
 import fr.ul.puzzle.model.PositionCase;
 
@@ -515,6 +515,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                         appliquerAffichagePieceDansCase(pieceSelectionnee, caseVide);
                         caseVide.addView(pieceSelectionnee);
                         caseVide.setTag(R.id.tag_piece_placee, pieceSelectionnee);
+                        jouerSonPlacement();
 
                         Integer indexPiece = (Integer) pieceSelectionnee.getTag(R.id.tag_piece_index);
                         Integer rotationPiece = (Integer) pieceSelectionnee.getTag(R.id.tag_rotation_piece);
@@ -612,6 +613,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
     }
 
     private void afficherVictoire() {
+        jouerSonVictoire();
         arreterChrono();
         sauvegarderTemps();
         sauvegarderScore();
@@ -952,6 +954,7 @@ public class JeuPuzzleActivity extends AppCompatActivity {
                     // ajouter la nouvelle pièce dans la case
                     targetCase.addView(pieceDragged);
                     targetCase.setTag(R.id.tag_piece_placee, pieceDragged);
+                    jouerSonPlacement();
 
                     ImageView pieceImage = (ImageView) pieceDragged;
                     Integer indexPiece = (Integer) pieceImage.getTag(R.id.tag_piece_index);
@@ -2194,6 +2197,22 @@ public class JeuPuzzleActivity extends AppCompatActivity {
         piece.setLayoutParams(pieceParams);
         piece.setVisibility(View.VISIBLE);
         piece.bringToFront();
+    }
+
+    private void jouerSonPlacement() {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.piece_place);
+        if (mediaPlayer != null) {
+            mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+            mediaPlayer.start();
+        }
+    }
+
+    private void jouerSonVictoire() {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.victory);
+        if (mediaPlayer != null) {
+            mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+            mediaPlayer.start();
+        }
     }
 
 
